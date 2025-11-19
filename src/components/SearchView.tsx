@@ -19,10 +19,10 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
   const exampleQueries = [
     // "How to migrate a contrib project from Vapor 2 to Vapor 3",
     "How to migrate a project to Vapor 3",
-    "How to create a new project with Vapor",
     "How do I request medical leave?",
     "Who manages performance reviews?",
     "I cannot connect to Cisco VPN",
+    "How to create a new project with Vapor",
   ];
 
   const handleExampleClick = (example: string) => {
