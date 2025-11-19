@@ -44,6 +44,24 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         <p>Search for solutions, find experts, or explore our knowledge base</p>
       </div>
 
+      <div className="features-grid">
+        <div className="feature-card">
+          <div className="feature-icon">Search</div>
+          <h4>Smart Search</h4>
+          <p>AI-powered search understands your intent and finds relevant solutions</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">Experts</div>
+          <h4>Find Experts</h4>
+          <p>Connect with team members who have solved similar problems</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-icon">Knowledge</div>
+          <h4>Knowledge Base</h4>
+          <p>Access documented solutions from past conversations</p>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-wrapper">
           <Search className="search-input-icon" size={20} />
@@ -81,23 +99,7 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         </div>
       </div>
 
-      <div className="features-grid">
-        <div className="feature-card">
-          <div className="feature-icon">Search</div>
-          <h4>Smart Search</h4>
-          <p>AI-powered search understands your intent and finds relevant solutions</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">Experts</div>
-          <h4>Find Experts</h4>
-          <p>Connect with team members who have solved similar problems</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">Knowledge</div>
-          <h4>Knowledge Base</h4>
-          <p>Access documented solutions from past conversations</p>
-        </div>
-      </div>
+    
     </div>
   );
 };
