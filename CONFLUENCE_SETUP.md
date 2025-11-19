@@ -93,6 +93,9 @@ The Space Key identifies which Confluence space the blog posts will be created i
    - **Email**: Your Atlassian account email
    - **API Token**: The token you generated in step 2
    - **Space Key/ID**: The space key from step 3 (e.g., "TEAM")
+   - **Content Type**: Choose between "Page" or "Blog Post"
+     - **Page** (Recommended): Creates regular Confluence pages in your space
+     - **Blog Post**: Creates dated blog entries in your space
 
 4. Click **"Test Connection"** to verify your credentials
    - If successful, you'll see a green success message
@@ -108,11 +111,30 @@ Once configured, you can share knowledge entries to Confluence:
 
 1. Open any knowledge entry detail view
 2. Click the **"Share"** button
-3. Select **"Share to Confluence"** from the menu
+3. Select **"Share to Confluence (Page)"** or **"Share to Confluence (Blog Post)"** from the menu
+   - The label will show your configured content type
 4. The extension will:
    - Convert the entry to Confluence format
-   - Create a new blog post in your configured space
-   - Open the new blog post in your browser
+   - Create a new page or blog post in your configured space
+   - Open the newly created content in your browser
+
+### Page vs Blog Post
+
+**When to use Pages:**
+
+- Permanent documentation
+- Knowledge base articles
+- How-to guides and tutorials
+- Reference documentation
+- Organized in your space's page tree
+
+**When to use Blog Posts:**
+
+- Announcements and updates
+- Time-sensitive information
+- Team updates or newsletters
+- Chronologically organized content
+- Appears in the space blog section
 
 ---
 
@@ -131,13 +153,13 @@ Once configured, you can share knowledge entries to Confluence:
 5. Check that your API token hasn't been revoked
 6. Ensure the space key is in uppercase if required (e.g., "TEAM" not "team")
 
-### Blog Post Creation Fails
+### Content Creation Fails
 
-**Problem:** Blog post doesn't get created when sharing.
+**Problem:** Page or blog post doesn't get created when sharing.
 
 **Solutions:**
 
-1. Ensure you have permission to create blog posts in the space
+1. Ensure you have permission to create pages/blog posts in the space
 2. Verify your Confluence account is active and not locked
 3. Check the browser console for detailed error messages
 4. Try the "Test Connection" feature again
@@ -152,8 +174,9 @@ Once configured, you can share knowledge entries to Confluence:
 2. Try using uppercase for the space key (e.g., "TEAM" instead of "team")
 3. Verify you have access to the space
 4. Make sure the space isn't archived
-5. Confirm the space allows blog posts
+5. Confirm the space allows pages/blog posts
 6. Check if the space is a personal space (starts with ~) - these may require special handling
+7. If using Blog Posts, ensure your space has blog functionality enabled
 
 ---
 
@@ -175,11 +198,17 @@ A: Currently, one space is configured at a time. You can change the Space Key in
 **Q: Should I use the space key or numeric space ID?**
 A: Use the space key (e.g., "TEAM"). It's easier to find and the extension automatically converts it to the numeric ID required by the API.
 
-**Q: What format are blog posts created in?**
-A: Blog posts use Confluence's storage format (HTML with Confluence macros) for proper formatting.
+**Q: Should I use Pages or Blog Posts?**
+A: Use **Pages** for permanent documentation and knowledge articles. Use **Blog Posts** for time-sensitive updates and announcements. Most teams prefer Pages for knowledge management.
 
-**Q: Can I edit blog posts after creation?**
-A: Yes! The extension opens the new blog post after creation, where you can make any edits in Confluence.
+**Q: What format are pages/blog posts created in?**
+A: Content uses Confluence's storage format (HTML with Confluence macros) for proper formatting.
+
+**Q: Can I edit content after creation?**
+A: Yes! The extension opens the newly created page/blog post after creation, where you can make any edits in Confluence.
+
+**Q: Can I switch between Pages and Blog Posts?**
+A: Yes! Change the "Content Type" setting at any time. Future shares will use the new setting.
 
 **Q: Will this work with Confluence Server/Data Center?**
 A: This integration is designed for Confluence Cloud. Server/Data Center may require different API endpoints.

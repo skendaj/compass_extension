@@ -6,9 +6,10 @@ interface ConfluenceConfig {
   email: string;
   apiToken: string;
   spaceId: string; // Can be either space key (e.g., "TEAM") or numeric ID
+  contentType?: "page" | "blogpost"; // Default: page
 }
 
-interface ConfluenceBlogPost {
+interface ConfluenceContent {
   spaceId?: string; // Numeric ID
   status: "current" | "draft";
   title: string;
@@ -16,6 +17,7 @@ interface ConfluenceBlogPost {
     representation: "storage" | "atlas_doc_format";
     value: string;
   };
+  parentId?: string; // For pages - optional parent page
 }
 
 interface ConfluenceResponse {
@@ -178,7 +180,7 @@ class ShareConfluenceService {
   }
 
   /**
-   * Create a blog post on Confluence from a KnowledgeEntry
+   * Create a page or blog post on Confluence from a KnowledgeEntry
    */
   async createBlogPost(entry: KnowledgeEntry): Promise<ConfluenceResponse> {
     const config = await this.loadConfig();
@@ -192,7 +194,8 @@ class ShareConfluenceService {
     // Get numeric space ID
     const numericSpaceId = await this.getSpaceId(config.spaceId, config);
 
-    const blogPost: ConfluenceBlogPost = {
+    const contentType = config.contentType || "page"; // Default to page
+    const content: ConfluenceContent = {
       spaceId: numericSpaceId,
       status: "current",
       title: entry.title,
@@ -202,7 +205,9 @@ class ShareConfluenceService {
       },
     };
 
-    const url = `https://${config.domain}/wiki/api/v2/blogposts`;
+    // Use different endpoint based on content type
+    const endpoint = contentType === "blogpost" ? "blogposts" : "pages";
+    const url = `https://${config.domain}/wiki/api/v2/${endpoint}`;
 
     const authHeader = this.createAuthHeader(config.email, config.apiToken);
 
@@ -214,13 +219,13 @@ class ShareConfluenceService {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(blogPost),
+        body: JSON.stringify(content),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Failed to create blog post: ${response.status} ${response.statusText} - ${errorText}`,
+          `Failed to create ${contentType}: ${response.status} ${response.statusText} - ${errorText}`,
         );
       }
 
@@ -228,18 +233,18 @@ class ShareConfluenceService {
 
       // Log success
       console.log(
-        `Blog post created successfully: ${result.title} (ID: ${result.id})`,
+        `${contentType === "blogpost" ? "Blog post" : "Page"} created successfully: ${result.title} (ID: ${result.id})`,
       );
 
       return result;
     } catch (error) {
-      console.error("Error creating Confluence blog post:", error);
+      console.error(`Error creating Confluence ${contentType}:`, error);
       throw error;
     }
   }
 
   /**
-   * Create a custom blog post with specific content
+   * Create a custom page or blog post with specific content
    */
   async createCustomPost(
     title: string,
@@ -260,7 +265,8 @@ class ShareConfluenceService {
       config,
     );
 
-    const blogPost: ConfluenceBlogPost = {
+    const contentType = config.contentType || "page"; // Default to page
+    const contentData: ConfluenceContent = {
       spaceId: numericSpaceId,
       status: "current",
       title: title,
@@ -270,7 +276,9 @@ class ShareConfluenceService {
       },
     };
 
-    const url = `https://${config.domain}/wiki/api/v2/blogposts`;
+    // Use different endpoint based on content type
+    const endpoint = contentType === "blogpost" ? "blogposts" : "pages";
+    const url = `https://${config.domain}/wiki/api/v2/${endpoint}`;
 
     const authHeader = this.createAuthHeader(config.email, config.apiToken);
 
@@ -282,25 +290,25 @@ class ShareConfluenceService {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(blogPost),
+        body: JSON.stringify(contentData),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `Failed to create blog post: ${response.status} ${response.statusText} - ${errorText}`,
+          `Failed to create ${contentType}: ${response.status} ${response.statusText} - ${errorText}`,
         );
       }
 
       const result: ConfluenceResponse = await response.json();
 
       console.log(
-        `Custom blog post created successfully: ${result.title} (ID: ${result.id})`,
+        `Custom ${contentType === "blogpost" ? "blog post" : "page"} created successfully: ${result.title} (ID: ${result.id})`,
       );
 
       return result;
     } catch (error) {
-      console.error("Error creating Confluence blog post:", error);
+      console.error(`Error creating Confluence ${contentType}:`, error);
       throw error;
     }
   }

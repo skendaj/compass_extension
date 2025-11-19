@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Share2,
   Copy,
@@ -21,6 +21,18 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const [copied, setCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
+  const [contentType, setContentType] = useState<"page" | "blogpost">("page");
+
+  useEffect(() => {
+    // Load content type from config
+    const loadContentType = async () => {
+      const config = await shareConfluenceService.loadConfig();
+      if (config) {
+        setContentType(config.contentType || "page");
+      }
+    };
+    loadContentType();
+  }, []);
 
   const shareLink = DeepLinkService.generateShareLink(entryId, "external");
   const socialLinks = DeepLinkService.getSocialShareLinks(
@@ -75,6 +87,10 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         return;
       }
 
+      // Reload content type in case it changed
+      const config = await shareConfluenceService.loadConfig();
+      const currentContentType = config?.contentType || "page";
+
       // Get the knowledge entry
       const entry = await storageService.getKnowledgeEntryById(entryId);
       if (!entry) {
@@ -83,11 +99,13 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         return;
       }
 
-      // Create the blog post
+      // Create the page or blog post
       const response = await shareConfluenceService.createBlogPost(entry);
       const webUrl = shareConfluenceService.getWebUrl(response);
 
-      setShareStatus("Successfully shared to Confluence!");
+      const contentName =
+        currentContentType === "blogpost" ? "Blog Post" : "Page";
+      setShareStatus(`Successfully created ${contentName} in Confluence!`);
 
       // Open the created blog post in a new tab
       if (webUrl) {
@@ -101,7 +119,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
       }, 2000);
     } catch (error) {
       console.error("Error sharing to Confluence:", error);
-      setShareStatus("Failed to share to Confluence");
+      const contentName = contentType === "blogpost" ? "blog post" : "page";
+      setShareStatus(`Failed to create ${contentName}`);
       setIsSharing(false);
     }
   };
@@ -183,7 +202,10 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
                 ) : (
                   <>
                     <FileText size={18} />
-                    <span>Share to Confluence</span>
+                    <span>
+                      Share to Confluence (
+                      {contentType === "blogpost" ? "Blog Post" : "Page"})
+                    </span>
                   </>
                 )}
               </button>
