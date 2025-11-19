@@ -1,4 +1,5 @@
 // Content Script - Floating Widget like Loom
+import { extractTeamsChat, isTeamsPage } from "./services/teamsDOMScraper";
 
 // Create and inject the floating widget
 function createFloatingWidget() {
@@ -340,15 +341,487 @@ function checkCurrentPageUrl() {
   }
 }
 
+// Teams Chat Capture functionality
+function createTeamsCaptureButton() {
+  // Check if we're on Teams and button doesn't exist
+  if (!isTeamsPage() || document.getElementById("tkw-teams-capture-btn")) {
+    return;
+  }
+
+  console.log("[Teams Capture] Creating capture button...");
+
+  const captureButton = document.createElement("div");
+  captureButton.id = "tkw-teams-capture-btn";
+  captureButton.innerHTML = `
+    <button class="tkw-teams-capture-button" title="Capture this Teams chat to Navify">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM17 12L12 17L7 12H10V8H14V12H17Z"/>
+      </svg>
+      <span>Capture Chat</span>
+    </button>
+  `;
+
+  // Add styles for Teams capture button
+  const style = document.createElement("style");
+  style.textContent = `
+    #tkw-teams-capture-btn {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 999998;
+      font-family: 'Roboto', 'Cairo', sans-serif;
+    }
+
+    .tkw-teams-capture-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #7E85FD;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 24px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(126, 133, 253, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .tkw-teams-capture-button:hover {
+      background: #6B72E8;
+      box-shadow: 0 6px 20px rgba(126, 133, 253, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .tkw-teams-capture-button:active {
+      transform: translateY(0);
+    }
+
+    .tkw-teams-capture-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tkw-teams-capture-loading {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    .tkw-teams-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 34, 51, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 1000001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: tkw-fadeIn 0.2s forwards;
+    }
+
+    .tkw-teams-modal-content {
+      background: white;
+      width: 900px;
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 34, 51, 0.4);
+      overflow: hidden;
+      transform: scale(0.9);
+      animation: tkw-slideIn 0.3s forwards;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tkw-teams-modal-header {
+      background: #002233;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #01BEE7;
+    }
+
+    .tkw-teams-modal-title {
+      font-family: 'Cairo', 'Roboto', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .tkw-teams-modal-close {
+      background: transparent;
+      border: 2px solid #01BEE7;
+      color: #01BEE7;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+
+    .tkw-teams-modal-close:hover {
+      background: #01BEE7;
+      color: #002233;
+    }
+
+    .tkw-teams-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+      color: #000;
+    }
+
+    .tkw-teams-summary {
+      font-family: 'Roboto', sans-serif;
+      color: #000;
+    }
+
+    .tkw-teams-summary h3 {
+      color: #002233;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .tkw-teams-summary p {
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .tkw-teams-summary ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tkw-teams-summary li {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      background: #f5f5f5;
+      border-left: 3px solid #7E85FD;
+      border-radius: 4px;
+      color: #000;
+    }
+
+    .tkw-teams-info {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #f0f9ff;
+      border-radius: 8px;
+    }
+
+    .tkw-teams-info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tkw-teams-info-label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .tkw-teams-info-value {
+      font-size: 14px;
+      color: #002233;
+      font-weight: 500;
+    }
+
+    .tkw-teams-modal-footer {
+      padding: 16px 24px;
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .tkw-teams-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .tkw-teams-btn-primary {
+      background: #7E85FD;
+      color: white;
+    }
+
+    .tkw-teams-btn-primary:hover {
+      background: #6B72E8;
+    }
+
+    .tkw-teams-btn-secondary {
+      background: white;
+      color: #002233;
+      border: 2px solid #e0e0e0;
+    }
+
+    .tkw-teams-btn-secondary:hover {
+      background: #f8f9fa;
+      border-color: #7E85FD;
+    }
+  `;
+
+  document.head.appendChild(style);
+  document.body.appendChild(captureButton);
+
+  // Add click handler
+  const button = captureButton.querySelector(".tkw-teams-capture-button");
+  if (button) {
+    button.addEventListener("click", handleTeamsCaptureClick);
+  }
+
+  console.log("[Teams Capture] Button created and added to page");
+}
+
+async function handleTeamsCaptureClick() {
+  console.log("[Teams Capture] Button clicked, starting capture...");
+  const button = document.querySelector(
+    ".tkw-teams-capture-button",
+  ) as HTMLElement;
+  if (!button) return;
+
+  // Show loading state
+  button.classList.add("tkw-teams-capture-loading");
+  const originalText = button.innerHTML;
+  button.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" opacity="0.3"/>
+      <path d="M12 2v4c3.31 0 6 2.69 6 6h4c0-5.52-4.48-10-10-10z"/>
+    </svg>
+    <span>Capturing...</span>
+  `;
+
+  // Add spinning animation
+  const spinStyle = document.createElement("style");
+  spinStyle.textContent = `
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(spinStyle);
+
+  try {
+    console.log("[Teams Capture] Calling extractTeamsChat...");
+    const chatData = await extractTeamsChat();
+    console.log("[Teams Capture] Chat extracted successfully:", chatData);
+    showTeamsChatModal(chatData);
+  } catch (error) {
+    console.error("[Teams Capture] Error capturing Teams chat:", error);
+    alert(
+      `Error capturing chat: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  } finally {
+    // Restore button
+    button.classList.remove("tkw-teams-capture-loading");
+    button.innerHTML = originalText;
+  }
+}
+
+function showTeamsChatModal(chatData: any) {
+  console.log("[Teams Capture] Showing modal with chat data");
+  // Remove existing modal if any
+  const existingModal = document.getElementById("tkw-teams-chat-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  const { summary, formattedText, keySummary, context } = chatData;
+
+  const modal = document.createElement("div");
+  modal.id = "tkw-teams-chat-modal";
+  modal.className = "tkw-teams-modal";
+
+  const chatTitle = context.chatName || "Untitled Chat";
+  const startDate = new Date(summary.dateRange.start).toLocaleDateString();
+  const endDate = new Date(summary.dateRange.end).toLocaleDateString();
+
+  modal.innerHTML = `
+    <div class="tkw-teams-modal-content">
+      <div class="tkw-teams-modal-header">
+        <h2 class="tkw-teams-modal-title">📥 Captured Teams Chat</h2>
+        <button class="tkw-teams-modal-close" id="tkw-close-teams-modal">×</button>
+      </div>
+      <div class="tkw-teams-modal-body">
+        <div class="tkw-teams-summary">
+          <div class="tkw-teams-info">
+            <div class="tkw-teams-info-item">
+              <span class="tkw-teams-info-label">Chat Name</span>
+              <span class="tkw-teams-info-value">${chatTitle}</span>
+            </div>
+            <div class="tkw-teams-info-item">
+              <span class="tkw-teams-info-label">Participants</span>
+              <span class="tkw-teams-info-value">${summary.participants.join(", ")}</span>
+            </div>
+            <div class="tkw-teams-info-item">
+              <span class="tkw-teams-info-label">Messages</span>
+              <span class="tkw-teams-info-value">${summary.messageCount}</span>
+            </div>
+            <div class="tkw-teams-info-item">
+              <span class="tkw-teams-info-label">Date Range</span>
+              <span class="tkw-teams-info-value">${startDate} - ${endDate}</span>
+            </div>
+          </div>
+
+          <h3>📝 Overview</h3>
+          <p>${keySummary.overview}</p>
+
+          ${
+            keySummary.keyPoints.length > 0
+              ? `
+            <h3>🔑 Key Points</h3>
+            <ul>
+              ${keySummary.keyPoints.map((point: string) => `<li>${point}</li>`).join("")}
+            </ul>
+          `
+              : ""
+          }
+
+          ${
+            keySummary.actionItems.length > 0
+              ? `
+            <h3>✅ Action Items</h3>
+            <ul>
+              ${keySummary.actionItems.map((item: string) => `<li>${item}</li>`).join("")}
+            </ul>
+          `
+              : ""
+          }
+
+          ${
+            keySummary.questions.length > 0
+              ? `
+            <h3>❓ Questions</h3>
+            <ul>
+              ${keySummary.questions.map((q: string) => `<li>${q}</li>`).join("")}
+            </ul>
+          `
+              : ""
+          }
+        </div>
+      </div>
+      <div class="tkw-teams-modal-footer">
+        <button class="tkw-teams-btn tkw-teams-btn-secondary" id="tkw-copy-chat">Copy to Clipboard</button>
+        <button class="tkw-teams-btn tkw-teams-btn-primary" id="tkw-save-chat">Save to Navify</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Add event listeners
+  const closeBtn = document.getElementById("tkw-close-teams-modal");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => modal.remove());
+  }
+
+  const copyBtn = document.getElementById("tkw-copy-chat");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(formattedText)
+        .then(() => {
+          copyBtn.textContent = "✓ Copied!";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy to Clipboard";
+          }, 2000);
+        })
+        .catch((err) => {
+          console.error("Failed to copy:", err);
+          alert("Failed to copy to clipboard");
+        });
+    });
+  }
+
+  const saveBtn = document.getElementById("tkw-save-chat");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      console.log("[Teams Capture] Save button clicked");
+      modal.remove();
+      // Open Navify with the chat data pre-filled
+      const params = new URLSearchParams({
+        action: "new-from-teams",
+        title: chatTitle,
+        content: formattedText,
+      });
+      console.log(
+        "[Teams Capture] Opening modal with params:",
+        params.toString(),
+      );
+      openModal(params.toString());
+    });
+  }
+
+  // Click outside to close
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+// Check if we should create Teams capture button
+function checkAndInitTeamsCapture() {
+  if (isTeamsPage()) {
+    console.log(
+      "[Teams Capture] Teams page detected! URL:",
+      window.location.href,
+    );
+    // Wait a bit for Teams to load
+    setTimeout(() => {
+      createTeamsCaptureButton();
+    }, 2000);
+
+    // Also watch for navigation changes in Teams SPA
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById("tkw-teams-capture-btn")) {
+        console.log("[Teams Capture] Button missing, recreating...");
+        createTeamsCaptureButton();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  } else {
+    console.log("[Teams Capture] Not a Teams page. URL:", window.location.href);
+  }
+}
+
 // Initialize widget when page loads
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     createFloatingWidget();
     checkCurrentPageUrl();
+    checkAndInitTeamsCapture();
   });
 } else {
   createFloatingWidget();
   checkCurrentPageUrl();
+  checkAndInitTeamsCapture();
 }
 
 // Export for TypeScript

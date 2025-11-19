@@ -5,15 +5,18 @@ An intelligent Chrome extension that acts as an internal StackOverflow-style ass
 ## 🚀 Features
 
 ### Smart Role Routing
+
 - **Engineering Queries**: Returns relevant internal documentation, recommended experts (Engineering Managers, Tech Leads, SMEs), and their contact methods
 - **HR Queries**: Returns HR contacts with quick action buttons to open Microsoft Teams or Outlook
 
 ### AI-Enhanced Support Flow
+
 - Automatically generates summaries when users resolve issues with experts
 - Captures problem statements, solutions, shared resources, and key steps
 - Stores summaries in a searchable knowledge base
 
 ### Internal Knowledge Search
+
 - Search previous solutions and conversations
 - Find experts who solved similar problems
 - Access internal documentation and resources
@@ -65,6 +68,7 @@ The extension icon should appear in your Chrome toolbar!
 ## 🎯 Usage
 
 ### Basic Search
+
 1. Click the extension icon in your toolbar
 2. Type your question or problem
 3. View categorized results:
@@ -73,16 +77,19 @@ The extension icon should appear in your Chrome toolbar!
    - Internal documentation
 
 ### Contact Experts
+
 - Click on an expert card to see their profile
 - Use "Teams Chat" or "Email" buttons to reach out
 - Pre-filled context helps experts understand your issue
 
 ### View Solutions
+
 - Click on any solution card to see full details
 - Review problem description, solution steps, and code examples
 - Rate solutions as helpful or not helpful
 
 ### Search History
+
 - Click the "History" tab to see your recent searches
 - Click any history item to re-run that search
 
@@ -116,16 +123,19 @@ extension/
 ## 🎨 UI Components
 
 ### Search View
+
 - Natural language search input
 - Example queries for quick access
 - Feature highlights
 
 ### Results View
+
 - **Solutions Section**: Previous solved issues with ratings
 - **Experts Section**: Team members with expertise and availability
 - **Documentation Section**: Links to internal resources
 
 ### Detail View
+
 - Full solution with step-by-step instructions
 - Code examples and shared resources
 - Contributor information
@@ -140,6 +150,7 @@ The extension uses keyword-based classification to route queries:
 **HR Keywords**: leave, vacation, benefits, payroll, insurance, onboarding, etc.
 
 The classifier:
+
 1. Extracts keywords from the query
 2. Counts matches in each category
 3. Returns category with confidence score
@@ -148,6 +159,7 @@ The classifier:
 ## 💾 Data Storage
 
 Uses Chrome's `storage.local` API to store:
+
 - Knowledge base entries
 - User profiles and experts
 - Search history
@@ -160,6 +172,7 @@ All data is stored locally in the browser.
 ### Adding Mock Data
 
 Edit `src/services/mockData.ts` to add:
+
 - Team members and experts
 - Example knowledge entries
 - Documentation links
@@ -167,6 +180,7 @@ Edit `src/services/mockData.ts` to add:
 ### Customizing Classification
 
 Edit `src/services/aiClassifier.ts` to adjust:
+
 - Keyword lists for different categories
 - Confidence thresholds
 - Technical term extraction
