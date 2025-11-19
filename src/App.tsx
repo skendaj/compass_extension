@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, History, BookMarked, Settings, LogOut } from "lucide-react";
+import KnowledgeGraph from "./components/KnowledgeGraph";
 import SearchView from "./components/SearchView";
 import ResultsView from "./components/ResultsView";
 import KnowledgeDetailView from "./components/KnowledgeDetailView";
@@ -13,7 +14,7 @@ import { storageService } from "./services/storageService";
 import { initializeMockData, mockDocumentation } from "./services/mockData";
 import { DeepLinkService } from "./services/deepLinkService";
 
-type View = "search" | "results" | "detail" | "history" | "settings";
+type View = "search" | "results" | "detail" | "history" | "settings" | "graph";
 
 function App() {
   const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth();
@@ -202,6 +203,13 @@ function App() {
               <span>Search</span>
             </button>
             <button
+              className={`nav-btn ${currentView === "graph" ? "active" : ""}`}
+              onClick={() => setCurrentView("graph")}
+            >
+              <BookMarked size={18} />
+              <span>Graph</span>
+            </button>
+            <button
               className={`nav-btn ${currentView === "history" ? "active" : ""}`}
               onClick={() => setCurrentView("history")}
             >
@@ -258,6 +266,8 @@ function App() {
         {currentView === "history" && <HistoryView onSearch={handleSearch} />}
 
         {currentView === "settings" && <SettingsView />}
+
+        {currentView === "graph" && <KnowledgeGraph />}
       </main>
 
       {/* Footer */}

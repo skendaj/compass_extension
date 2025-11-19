@@ -121,3 +121,21 @@ export interface ClassificationResult {
   keywords: string[];
 }
 
+// Graph types for KnowledgeGraph
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: 'entry' | 'tag' | 'user';
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  weight?: number;
+}
+
+export interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
