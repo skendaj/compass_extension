@@ -40,10 +40,13 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
           />
         </div>
         <h2>What can we help you with today?</h2>
-        <p>Search for solutions, find experts, or explore our knowledge base        </p>
+        <p>
+          Search for direct solutions, connect with experts, or explore our
+          knowledge base
+        </p>
       </div>
 
-<div className="examples-section">
+      <div className="examples-section">
         <h3>Popular searches:</h3>
         <div className="examples-grid">
           {exampleQueries.map((example, index) => (
@@ -80,7 +83,10 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         </button>
       </form>
 
-    
+      <span>
+        Hint: ask a question naturally, to get the best results use specific
+        keywords.
+      </span>
     </div>
   );
 };

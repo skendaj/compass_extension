@@ -116,26 +116,6 @@ function createFloatingWidget() {
       color: #fff
     }
 
-    .tkw-modal-close {
-      background: transparent;
-      border: 2px solid #01BEE7;
-      color: #01BEE7;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      font-size: 24px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .tkw-modal-close:hover {
-      background: #01BEE7;
-      color: #002233;
-    }
-
     .tkw-modal-body {
       height: calc(100% - 72px);
     }
@@ -196,7 +176,7 @@ function openModal(params?: string) {
     <div class="tkw-modal-content">
       <div class="tkw-modal-header">
         <h2 class="tkw-modal-title">TeamSystem Navify</h2>
-        <button class="tkw-modal-close" id="tkw-close-modal">×</button>
+        <button class="single-mui-icon-btn" id="tkw-close-modal"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
       <div class="tkw-modal-body">
         <iframe class="tkw-modal-iframe" src="${iframeUrl}"></iframe>
@@ -654,6 +634,15 @@ function showTeamsChatModal(chatData: any) {
             </div>
           </div>
 
+          ${
+            keySummary.extractedQuestion
+              ? `
+            <h3>❓ Question</h3>
+            <p><strong>${keySummary.extractedQuestion}</strong></p>
+          `
+              : ""
+          }
+
           <h3>📝 Overview</h3>
           <p>${keySummary.overview}</p>
 
@@ -682,7 +671,7 @@ function showTeamsChatModal(chatData: any) {
           ${
             keySummary.questions.length > 0
               ? `
-            <h3>❓ Questions</h3>
+            <h3>❓ Additional Questions</h3>
             <ul>
               ${keySummary.questions.map((q: string) => `<li>${q}</li>`).join("")}
             </ul>
@@ -728,10 +717,15 @@ function showTeamsChatModal(chatData: any) {
     saveBtn.addEventListener("click", () => {
       console.log("[Teams Capture] Save button clicked");
       modal.remove();
+
+      // Use extracted question as title if available
+      const title = keySummary.extractedQuestion || chatTitle;
+
       const params = new URLSearchParams({
         action: "new-from-teams",
-        title: chatTitle,
+        title: title,
         content: formattedText,
+        question: keySummary.extractedQuestion || "",
       });
       console.log(
         "[Teams Capture] Opening modal with params:",

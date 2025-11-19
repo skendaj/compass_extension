@@ -629,7 +629,7 @@ const SettingsView: React.FC = () => {
         }
 
         .radio-label {
-          display: flex;
+          display: flex!important;
           align-items: flex-start;
           gap: 10px;
           padding: 12px;
@@ -660,7 +660,7 @@ const SettingsView: React.FC = () => {
 
         .radio-text {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           gap: 2px;
           font-size: 14px;
           color: #374151;
