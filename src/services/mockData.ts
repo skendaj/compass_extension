@@ -4,23 +4,23 @@ import { User, KnowledgeEntry, DocumentationLink } from '../types';
 export const mockUsers: User[] = [
   {
     id: '1',
-    name: 'John Smith',
-    email: 'john.smith@company.com',
-    role: 'Senior Backend Engineer',
-    department: 'Engineering',
-    expertiseTags: ['Node.js', 'PostgreSQL', 'API Design', 'Microservices', 'Docker'],
+    name: 'Eleonora Tonelli',
+    email: 'e.tonelli@teamsystem.com',
+    role: 'HR Manager',
+    department: 'Human Resources',
+    expertiseTags: ['Benefits', 'Payroll', 'Employee Relations', 'Onboarding'],
     contactMethods: {
-      teams: 'john.smith',
-      email: 'john.smith@company.com',
+      teams: 'Eleonora Tonelli',
+      email: 'e.tonelli@teamsystem.com',
     },
     stats: {
-      questionsAsked: 15,
-      questionsAnswered: 47,
-      solutionRating: 4.7,
-      responseTime: 25,
+      questionsAsked: 5,
+      questionsAnswered: 156,
+      solutionRating: 4.8,
+      responseTime: 45,
     },
     availability: 'available',
-    avatar: '👨‍💻',
+    avatar: '👩‍💼',
   },
   {
     id: '2',
@@ -44,14 +44,14 @@ export const mockUsers: User[] = [
   },
   {
     id: '3',
-    name: 'Mike Chen',
-    email: 'mike.chen@company.com',
+    name: 'Andrea Vitali',
+    email: 'a.vitali01@teamsystem.com',
     role: 'Tech Lead',
     department: 'Engineering',
     expertiseTags: ['React', 'TypeScript', 'GraphQL', 'Frontend Architecture'],
     contactMethods: {
-      teams: 'mike.chen',
-      email: 'mike.chen@company.com',
+      teams: 'Andrea Vitali',
+      email: 'a.vitali01@teamsystem.com',
     },
     stats: {
       questionsAsked: 22,
@@ -64,14 +64,14 @@ export const mockUsers: User[] = [
   },
   {
     id: '4',
-    name: 'Jane Smith',
-    email: 'jane.smith@company.com',
+    name: 'Eleonora Tonelli',
+    email: 'e.tonelli@teamsystem.com',
     role: 'HR Manager',
     department: 'Human Resources',
     expertiseTags: ['Benefits', 'Payroll', 'Employee Relations', 'Onboarding'],
     contactMethods: {
-      teams: 'jane.smith',
-      email: 'jane.smith@company.com',
+      teams: 'Eleonora Tonelli',
+      email: 'e.tonelli@teamsystem.com',
     },
     stats: {
       questionsAsked: 5,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown, ExternalLink, Download, Calendar, Clock, Eye } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, ExternalLink, Download, Calendar, Clock, Eye, Mail, MessageSquare } from 'lucide-react';
 import { KnowledgeEntry } from '../types';
 import ShareButton from './ShareButton';
 
@@ -32,6 +32,16 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
+  };
+
+  const getTeamsUrl = (email: string, name: string) => {
+    const message = encodeURIComponent(`Hi ${name},`);
+    return `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}&message=${message}`;
+  };
+
+  const getOutlookUrl = (email: string) => {
+    const subject = `Re: ${entry.title}`;
+    return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(email)}&subject=${encodeURIComponent(subject)}`;
   };
 
   return (
@@ -118,17 +128,53 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
             <div className="contributors">
               <div className="contributor">
                 <span className="contributor-avatar">{entry.askedBy.avatar || '👤'}</span>
-                <div>
+                <div className="contributor-info">
                   <div className="contributor-name">{entry.askedBy.name}</div>
                   <div className="contributor-role">Asked the question</div>
+                </div>
+                <div className="contributor-actions">
+                  <button 
+                    className="contact-btn teams-btn"
+                    onClick={() => window.open(getTeamsUrl(entry.askedBy.email, entry.askedBy.name), '_blank')}
+                    title={`Message ${entry.askedBy.name} on Teams`}
+                  >
+                    <MessageSquare size={16} />
+                    Teams
+                  </button>
+                  <button 
+                    className="contact-btn email-btn"
+                    onClick={() => window.open(getOutlookUrl(entry.askedBy.email), '_blank')}
+                    title={`Send email to ${entry.askedBy.name}`}
+                  >
+                    <Mail size={16} />
+                    Email
+                  </button>
                 </div>
               </div>
               {entry.solvedBy.map(solver => (
                 <div key={solver.id} className="contributor">
                   <span className="contributor-avatar">{solver.avatar || '👤'}</span>
-                  <div>
+                  <div className="contributor-info">
                     <div className="contributor-name">{solver.name}</div>
                     <div className="contributor-role">{solver.role}</div>
+                  </div>
+                  <div className="contributor-actions">
+                    <button 
+                      className="contact-btn teams-btn"
+                      onClick={() => window.open(getTeamsUrl(solver.email, solver.name), '_blank')}
+                      title={`Message ${solver.name} on Teams`}
+                    >
+                      <MessageSquare size={16} />
+                      Teams
+                    </button>
+                    <button 
+                      className="contact-btn email-btn"
+                      onClick={() => window.open(getOutlookUrl(solver.email), '_blank')}
+                      title={`Send email to ${solver.name}`}
+                    >
+                      <Mail size={16} />
+                      Email
+                    </button>
                   </div>
                 </div>
               ))}
