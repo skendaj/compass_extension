@@ -190,7 +190,7 @@ function App() {
         <div className="header-content">
           {/* <h1 className="title">TeamSystem Navify</h1> */}
           <p className="subtitle">
-            Find answers, experts, and solutions instantly
+            Get instant answers or connect with experts in your organization
           </p>
           {/* Navigation */}
           <nav className="nav">

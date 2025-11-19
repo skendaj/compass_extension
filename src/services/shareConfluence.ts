@@ -180,6 +180,41 @@ class ShareConfluenceService {
   }
 
   /**
+   * Search for existing page by title
+   */
+  private async findExistingPage(
+    title: string,
+    spaceId: string,
+    config: ConfluenceConfig,
+  ): Promise<ConfluenceResponse | null> {
+    const contentType = config.contentType || "page";
+    const endpoint = contentType === "blogpost" ? "blogposts" : "pages";
+    const url = `https://${config.domain}/wiki/api/v2/${endpoint}?spaceId=${spaceId}&title=${encodeURIComponent(title)}`;
+    const authHeader = this.createAuthHeader(config.email, config.apiToken);
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: authHeader,
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          return data.results[0];
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error searching for existing page:", error);
+      return null;
+    }
+  }
+
+  /**
    * Create a page or blog post on Confluence from a KnowledgeEntry
    */
   async createBlogPost(entry: KnowledgeEntry): Promise<ConfluenceResponse> {
@@ -224,6 +259,31 @@ class ShareConfluenceService {
 
       if (!response.ok) {
         const errorText = await response.text();
+
+        // Check if error is due to duplicate title
+        if (
+          response.status === 400 &&
+          errorText.includes("page already exists with the same TITLE")
+        ) {
+          console.log(
+            `${contentType === "blogpost" ? "Blog post" : "Page"} with title "${entry.title}" already exists. Finding existing page...`,
+          );
+
+          // Search for the existing page
+          const existingPage = await this.findExistingPage(
+            entry.title,
+            numericSpaceId,
+            config,
+          );
+
+          if (existingPage) {
+            console.log(
+              `Found existing ${contentType === "blogpost" ? "blog post" : "page"}: ${existingPage.title} (ID: ${existingPage.id})`,
+            );
+            return existingPage;
+          }
+        }
+
         throw new Error(
           `Failed to create ${contentType}: ${response.status} ${response.statusText} - ${errorText}`,
         );
@@ -295,6 +355,31 @@ class ShareConfluenceService {
 
       if (!response.ok) {
         const errorText = await response.text();
+
+        // Check if error is due to duplicate title
+        if (
+          response.status === 400 &&
+          errorText.includes("page already exists with the same TITLE")
+        ) {
+          console.log(
+            `${contentType === "blogpost" ? "Blog post" : "Page"} with title "${title}" already exists. Finding existing page...`,
+          );
+
+          // Search for the existing page
+          const existingPage = await this.findExistingPage(
+            title,
+            numericSpaceId,
+            config,
+          );
+
+          if (existingPage) {
+            console.log(
+              `Found existing ${contentType === "blogpost" ? "blog post" : "page"}: ${existingPage.title} (ID: ${existingPage.id})`,
+            );
+            return existingPage;
+          }
+        }
+
         throw new Error(
           `Failed to create ${contentType}: ${response.status} ${response.statusText} - ${errorText}`,
         );
