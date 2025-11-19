@@ -18,7 +18,7 @@ export interface User {
     solutionRating: number;
     responseTime: number; // avg in minutes
   };
-  availability: 'available' | 'busy' | 'away';
+  availability: "available" | "busy" | "away";
   avatar?: string;
 }
 
@@ -34,7 +34,7 @@ export interface KnowledgeEntry {
   askedBy: User;
   solvedBy: User[];
   tags: string[];
-  category: 'engineering' | 'hr' | 'general';
+  category: "engineering" | "hr" | "general";
   resources: {
     links: string[];
     files: FileReference[];
@@ -44,12 +44,13 @@ export interface KnowledgeEntry {
     createdAt: Date;
     resolvedAt: Date;
     resolutionTime: number; // minutes
-    difficulty: 'easy' | 'medium' | 'hard';
+    difficulty: "easy" | "medium" | "hard";
     views: number;
     helpfulCount: number;
     notHelpfulCount: number;
+    confluenceUrl?: string; // URL to Confluence page if shared
   };
-  status: 'active' | 'outdated' | 'verified';
+  status: "active" | "outdated" | "verified";
 }
 
 export interface FileReference {
@@ -60,7 +61,7 @@ export interface FileReference {
 }
 
 export interface SearchResult {
-  type: 'solution' | 'expert' | 'documentation';
+  type: "solution" | "expert" | "documentation";
   relevanceScore: number;
   data: KnowledgeEntry | User | DocumentationLink;
 }
@@ -71,20 +72,20 @@ export interface DocumentationLink {
   url: string;
   description: string;
   tags: string[];
-  source: 'confluence' | 'wiki' | 'github' | 'other';
+  source: "confluence" | "wiki" | "github" | "other";
 }
 
 export interface ConversationTracker {
   id: string;
   queryId: string;
   participants: User[];
-  platform: 'teams' | 'slack' | 'email';
+  platform: "teams" | "slack" | "email";
   messages: Message[];
   sharedResources: {
     links: string[];
     files: FileReference[];
   };
-  status: 'active' | 'resolved' | 'abandoned';
+  status: "active" | "resolved" | "abandoned";
   startedAt: Date;
   resolvedAt?: Date;
   autoSummaryGenerated: boolean;
@@ -113,7 +114,7 @@ export interface ExpertDirectory {
   ranking: number; // overall expert score
 }
 
-export type QueryCategory = 'engineering' | 'hr' | 'general';
+export type QueryCategory = "engineering" | "hr" | "general";
 
 export interface ClassificationResult {
   category: QueryCategory;
@@ -125,7 +126,7 @@ export interface ClassificationResult {
 export interface GraphNode {
   id: string;
   label: string;
-  type: 'entry' | 'tag' | 'user';
+  type: "entry" | "tag" | "user";
 }
 
 export interface GraphLink {
@@ -138,4 +139,3 @@ export interface GraphData {
   nodes: GraphNode[];
   links: GraphLink[];
 }
-
