@@ -1,0 +1,26 @@
+Icon Placeholder Instructions
+===========================
+
+This extension needs icon files for Chrome. You can:
+
+1. Use an icon generator (like https://www.iconarchive.com/ or Figma)
+2. Create icons at these sizes: 16x16, 48x48, 128x128 pixels
+3. Save them as PNG files
+4. Place them in the /icons directory with these names:
+   - icon16.png
+   - icon48.png
+   - icon128.png
+
+Recommended Icon Design:
+- Theme: Knowledge/Light bulb/Brain/Search
+- Colors: Purple gradient (#667eea to #764ba2) to match UI
+- Style: Modern, flat design
+- Background: Transparent
+
+For now, you can use placeholder icons or copy from the dist folder after build.
+
+Temporary Workaround:
+- The extension will work without icons
+- Chrome will show a default puzzle piece icon
+- Add proper icons before production deployment
+
