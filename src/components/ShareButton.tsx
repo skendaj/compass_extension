@@ -105,7 +105,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
 
       const contentName =
         currentContentType === "blogpost" ? "Blog Post" : "Page";
-      setShareStatus(`Successfully created ${contentName} in Confluence!`);
+      setShareStatus(`Successfully shared to Confluence!`);
 
       // Open the created blog post in a new tab
       if (webUrl) {
