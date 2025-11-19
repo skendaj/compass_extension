@@ -38,10 +38,8 @@ const KnowledgeGraph: React.FC = () => {
       const nodes: GraphNode[] = [];
       const links: GraphLink[] = [];
 
-      // Add entry nodes
       entries.forEach((e: KnowledgeEntry) => {
         nodes.push({ id: `entry-${e.id}`, label: e.title, type: 'entry' });
-        // tag nodes + links
         e.tags.forEach((t) => {
           const tagId = `tag-${t}`;
           if (!nodes.some((n) => n.id === tagId)) {
@@ -71,7 +69,6 @@ const KnowledgeGraph: React.FC = () => {
     simRef.current = sim;
 
     const tick = () => {
-      // trigger React render by updating state reference (shallow)
       setGraph((g) => ({ ...g }));
     };
 
@@ -84,7 +81,6 @@ const KnowledgeGraph: React.FC = () => {
     };
   }, [graph.nodes.length, size.w, size.h]);
 
-  // Drag handlers
   const pointerDown = (e: React.PointerEvent, nodeId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     const sim = simRef.current;
@@ -127,7 +123,6 @@ const KnowledgeGraph: React.FC = () => {
             <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.2" />
           </filter>
         </defs>
-        {/* links */}
         {graph.links.map((l, idx) => {
           const sourceNode = (simRef.current?.nodes() as NodeDatum[] | undefined)?.find((n) => n.id === l.source);
           const targetNode = (simRef.current?.nodes() as NodeDatum[] | undefined)?.find((n) => n.id === l.target);
@@ -140,7 +135,6 @@ const KnowledgeGraph: React.FC = () => {
           );
         })}
 
-        {/* nodes */}
         {graph.nodes.map((n) => {
           const node = (simRef.current?.nodes() as NodeDatum[] | undefined)?.find((x) => x.id === n.id);
           const cx = node ? node.x ?? 0 : 0;

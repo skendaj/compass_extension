@@ -30,7 +30,6 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       setTitle(initialData.title);
       setSolution(initialData.content);
 
-      // Try to extract a brief problem statement from the content
       const lines = initialData.content.split("\n");
       const overviewLine = lines.find(
         (line) => line.includes("Overview") || line.includes("Summary"),
@@ -69,7 +68,6 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
     console.log("[NewEntryView] Solution length:", solution.length);
     console.log("[NewEntryView] Tags:", tags);
 
-    // Validation
     if (!title.trim()) {
       setError("Title is required");
       console.error("[NewEntryView] Validation failed: Title is required");

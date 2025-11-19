@@ -15,7 +15,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onSearch }) => {
 
   const loadHistory = async () => {
     const data = await storageService.getSearchHistory();
-    // Convert timestamp strings back to Date objects
     const historyWithDates = data.map(item => ({
       query: item.query,
       timestamp: new Date(item.timestamp)
@@ -28,7 +27,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onSearch }) => {
       const now = new Date();
       const timestamp = new Date(date);
       
-      // Check if date is valid
       if (Number.isNaN(timestamp.getTime())) {
         return 'Unknown date';
       }

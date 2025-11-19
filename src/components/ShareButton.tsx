@@ -19,20 +19,17 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const [isShared, setIsShared] = useState(false);
 
   useEffect(() => {
-    // Reset state when entryId changes
     setConfluenceUrl(null);
     setIsShared(false);
     setCopied(false);
     setShareStatus(null);
 
-    // Load content type from config and check if entry is already shared
     const loadData = async () => {
       const config = await shareConfluenceService.loadConfig();
       if (config) {
         setContentType(config.contentType || "page");
       }
 
-      // Check if entry has Confluence URL
       const entry = await storageService.getKnowledgeEntryById(entryId);
       if (entry?.metadata.confluenceUrl) {
         setConfluenceUrl(entry.metadata.confluenceUrl);
@@ -100,17 +97,14 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   };
 
   const handleShareToConfluence = async () => {
-    // If already shared, just open the Confluence page
     if (isShared && confluenceUrl) {
       window.open(confluenceUrl, "_blank");
       return;
     }
 
-    // Otherwise, share it
     setIsSharing(true);
     setShareStatus(null);
 
-    // Get the knowledge entry
     const entry = await storageService.getKnowledgeEntryById(entryId);
     if (!entry) {
       setShareStatus("Entry not found");
@@ -119,7 +113,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
     }
 
     try {
-      // Check if Confluence is configured
       const isConfigured = await shareConfluenceService.isConfigured();
       if (!isConfigured) {
         setShareStatus(
@@ -129,11 +122,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         return;
       }
 
-      // Create the page or blog post
       const response = await shareConfluenceService.createBlogPost(entry);
       const webUrl = shareConfluenceService.getWebUrl(response);
 
-      // Save the Confluence URL to the entry
       if (webUrl) {
         await storageService.updateKnowledgeEntry(entryId, {
           metadata: {
@@ -142,14 +133,12 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
           },
         });
 
-        // Update state immediately
         setConfluenceUrl(webUrl);
         setIsShared(true);
       }
 
       setShareStatus(`Successfully shared to Confluence!`);
 
-      // Open the created blog post in a new tab
       if (webUrl) {
         window.open(webUrl, "_blank");
       }

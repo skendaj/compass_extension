@@ -1,4 +1,3 @@
-// QnA backend integration
 import { DocumentationLink, KnowledgeEntry, User } from '../types';
 
 const BASE_URL = 'http://localhost:5001';
@@ -36,7 +35,6 @@ export const qnaService = {
     }
   },
 
-  // Helpers to map backend objects into app types
   mapSuggestedContactToUser: (c: any): User => {
     return {
       id: c.id || `contact-${Math.random().toString(36).slice(2, 9)}`,

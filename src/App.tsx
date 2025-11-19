@@ -29,7 +29,6 @@ function App() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notFoundMessage, setNotFoundMessage] = useState<string | null>(null);
 
-  // Initialize mock data on first load
   useEffect(() => {
     const init = async () => {
       const entries = await storageService.getAllKnowledgeEntries();
@@ -37,35 +36,29 @@ function App() {
         await initializeMockData();
       }
 
-      // Check for pending deep link
       checkDeepLink();
     };
 
-    // Only initialize if authenticated
     if (isAuthenticated) {
       init();
     }
   }, [isAuthenticated]);
 
-  // Handle deep links
   const checkDeepLink = async () => {
     const pendingLink = await DeepLinkService.getPendingLink();
     if (pendingLink) {
       const parsed = DeepLinkService.parseDeepLink(pendingLink);
 
       if (parsed.type === "entry" && parsed.id) {
-        // Load specific entry
         const entry = await storageService.getKnowledgeEntryById(parsed.id);
         if (entry) {
           handleViewDetail(entry);
         }
       } else if (parsed.type === "search" && parsed.query) {
-        // Perform search
         handleSearch(parsed.query);
       }
     }
 
-    // Also check URL parameters (for iframe/modal)
     const urlParams = new URLSearchParams(window.location.search);
     const entryId = urlParams.get("entry");
     const searchQuery = urlParams.get("q");
@@ -86,38 +79,28 @@ function App() {
     setIsLoading(true);
     setSearchQuery(query);
 
-    // Simulate loading delay for better UX (1.5 seconds)
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Save search to history
     await storageService.saveSearchQuery(query);
 
-    // Classify the query
     const classification = aiClassifier.classify(query);
 
-    // Ask backend QnA service for a direct answer / suggested contacts / related docs
     const qnaResp = await qnaService.ask(query);
 
-    // Search knowledge base
     const knowledgeEntries = await storageService.searchKnowledgeEntries(query);
 
-    // Find relevant experts
     const technicalTerms = aiClassifier.extractTechnicalTerms(query);
     const experts = await storageService.searchExperts(technicalTerms);
 
-    // Start building combined results, integrating QnA output when available
     const combined: SearchResult[] = [];
 
     if (qnaResp) {
       if ((qnaResp as any).found === true) {
-        // Create a knowledge entry from the QnA found answer and add as a high-relevance solution
         const ke = qnaService.mapFoundToKnowledgeEntry(qnaResp as any, classification.category, query);
         combined.push({ type: 'solution', relevanceScore: 1.0, data: ke });
-        setNotFoundMessage(null); // Clear any previous message
+        setNotFoundMessage(null);
       } else {
-        // Not found: add suggested contacts and related docs returned by backend
         const notFound = qnaResp as any;
-        // Set the "not found" message
         setNotFoundMessage(notFound.message || "I don't have an exact answer, but here are some people who might help and related documentation:");
         
         if (Array.isArray(notFound.suggestedContacts)) {
@@ -131,10 +114,8 @@ function App() {
       setNotFoundMessage(null);
     }
 
-    // Add knowledge entries from local storage
     combined.push(...knowledgeEntries.map((entry) => ({ type: 'solution' as const, relevanceScore: 0.9, data: entry })));
 
-    // Add local experts and documentation
     combined.push(...experts.map((expert) => ({ type: 'expert' as const, relevanceScore: 0.8, data: expert })));
     combined.push(...mockDocumentation
       .filter((doc) =>
@@ -148,7 +129,6 @@ function App() {
 
     setSearchResults(results);
 
-    // If there's only one solution result, skip results view and go directly to detail
     const solutionResults = results.filter((r) => r.type === "solution");
     if (solutionResults.length === 1) {
       const entry = solutionResults[0].data as KnowledgeEntry;
@@ -176,7 +156,6 @@ function App() {
 
   const handleRateEntry = async (entryId: string, helpful: boolean) => {
     await storageService.rateKnowledgeEntry(entryId, helpful);
-    // Refresh the entry
     const updatedEntry = await storageService.getKnowledgeEntryById(entryId);
     if (updatedEntry) {
       setSelectedEntry(updatedEntry);
@@ -189,7 +168,6 @@ function App() {
     setIsLoggingOut(false);
   };
 
-  // Show loading state while checking auth
   if (authLoading) {
     return (
       <div className="app-container">
@@ -201,21 +179,17 @@ function App() {
     );
   }
 
-  // Show login page if not authenticated
   if (!isAuthenticated) {
     return <LoginPage appName="TeamSystem Navify" />;
   }
 
   return (
     <div className="app-container">
-      {/* Header */}
       <header className="header">
         <div className="header-content">
-          {/* <h1 className="title">TeamSystem Navify</h1> */}
           <p className="subtitle">
             Get instant answers or connect with experts in your organization
           </p>
-          {/* Navigation */}
           <nav className="nav">
             <button
               className={`nav-btn ${currentView === "search" || currentView === "results" || currentView === "detail" ? "active" : ""}`}
@@ -262,7 +236,6 @@ function App() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="main-content">
         {currentView === "search" && (
           <SearchView onSearch={handleSearch} isLoading={isLoading} />
@@ -293,7 +266,6 @@ function App() {
         {currentView === "graph" && <KnowledgeGraph />}
       </main>
 
-      {/* Footer */}
       <footer className="footer">
         <p>
           Tip: Ask questions naturally, like "How do I deploy to production?"

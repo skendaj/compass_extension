@@ -1,42 +1,28 @@
-// Deep Link Service - Share knowledge entries via URLs
-
 export class DeepLinkService {
   private static readonly BASE_URL = "https://knowledge.company.com"; // Replace with your domain
   private static readonly EXTENSION_PROTOCOL = "teamknowledge://";
 
-  /**
-   * Generate a shareable link for a knowledge entry
-   */
   static generateShareLink(
     entryId: string,
     type: "internal" | "external" = "external",
   ): string {
     if (type === "internal") {
-      // Deep link for users with extension installed
       return `${this.EXTENSION_PROTOCOL}entry/${entryId}`;
     } else {
-      // Web link that works for everyone
       return `${this.BASE_URL}/entry/${entryId}`;
     }
   }
 
-  /**
-   * Generate a shareable link with query context
-   */
   static generateSearchLink(query: string): string {
     const encodedQuery = encodeURIComponent(query);
     return `${this.BASE_URL}/search?q=${encodedQuery}`;
   }
 
-  /**
-   * Parse a deep link URL and extract entry ID
-   */
   static parseDeepLink(url: string): {
     type: "entry" | "search" | null;
     id?: string;
     query?: string;
   } {
-    // Handle extension protocol (teamknowledge://entry/123)
     if (url.startsWith(this.EXTENSION_PROTOCOL)) {
       const path = url.replace(this.EXTENSION_PROTOCOL, "");
       if (path.startsWith("entry/")) {
@@ -48,7 +34,6 @@ export class DeepLinkService {
       }
     }
 
-    // Handle web URLs (https://knowledge.company.com/entry/123)
     if (url.startsWith(this.BASE_URL)) {
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split("/");
@@ -68,18 +53,13 @@ export class DeepLinkService {
     return { type: null };
   }
 
-  /**
-   * Copy link to clipboard
-   */
   static async copyToClipboard(link: string): Promise<boolean> {
-    // Try modern clipboard API first
     try {
       await navigator.clipboard.writeText(link);
       return true;
     } catch (error) {
       console.error("Clipboard API failed, trying fallback:", error);
 
-      // Fallback to execCommand method
       try {
         const textArea = document.createElement("textarea");
         textArea.value = link;
@@ -107,9 +87,6 @@ export class DeepLinkService {
     }
   }
 
-  /**
-   * Share via native share API (mobile)
-   */
   static async shareNative(
     title: string,
     text: string,
@@ -131,9 +108,6 @@ export class DeepLinkService {
     return false;
   }
 
-  /**
-   * Generate sharing links for various platforms
-   */
   static getSocialShareLinks(url: string, title: string) {
     const encodedUrl = encodeURIComponent(url);
     const encodedTitle = encodeURIComponent(title);
@@ -146,16 +120,10 @@ export class DeepLinkService {
     };
   }
 
-  /**
-   * Store pending deep link for when app opens
-   */
   static async storePendingLink(link: string): Promise<void> {
     await chrome.storage.local.set({ pendingDeepLink: link });
   }
 
-  /**
-   * Get and clear pending deep link
-   */
   static async getPendingLink(): Promise<string | null> {
     const result = await chrome.storage.local.get("pendingDeepLink");
     if (result.pendingDeepLink) {

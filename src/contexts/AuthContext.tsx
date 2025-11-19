@@ -73,7 +73,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     console.log('[AuthContext] Logging out user...');
     
-    // Simulate logout delay for better UX
     await new Promise(resolve => setTimeout(resolve, 800));
     
     await chrome.storage.local.remove(['authToken', 'user', 'tokenExpiry']);

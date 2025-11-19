@@ -22,7 +22,6 @@ const ChatSummaryButton: React.FC<ChatSummaryButtonProps> = ({
     setError(null);
 
     try {
-      // Check if authenticated
       const isConfigured = await teamsIntegrationService.isConfigured();
       if (!isConfigured) {
         setError("Please configure Teams integration in settings first");
@@ -32,7 +31,6 @@ const ChatSummaryButton: React.FC<ChatSummaryButtonProps> = ({
 
       const token = await teamsIntegrationService.loadAccessToken();
       if (!token) {
-        // Need to authenticate
         const authenticated = await teamsIntegrationService.authenticate();
         if (!authenticated) {
           setError("Authentication failed. Please try again.");
@@ -41,7 +39,6 @@ const ChatSummaryButton: React.FC<ChatSummaryButtonProps> = ({
         }
       }
 
-      // Get chat summary
       const chatSummary = await teamsIntegrationService.summarizeChat(
         expert.email,
       );

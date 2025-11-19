@@ -55,7 +55,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
       </div>
 
       <div className="detail-content">
-        {/* Title Section */}
         <div className="detail-title-section">
           <div className="title-badges">
             <span className={`category-badge ${entry.category}`}>{entry.category}</span>
@@ -66,24 +65,14 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
           <h1 className="detail-title">{entry.title}</h1>
           
-          {/* Metadata */}
           <div className="detail-metadata">
             <span className="metadata-item">
               <Calendar size={16} />
               {formatDate(entry.metadata.createdAt)}
             </span>
-            {/* <span className="metadata-item">
-              <Clock size={16} />
-              Resolved in {formatDuration(entry.metadata.resolutionTime)}
-            </span>
-            <span className="metadata-item">
-              <Eye size={16} />
-              {entry.metadata.views} views
-            </span> */}
           </div>
         </div>
 
-        {/* Problem Section */}
         <section className="detail-section">
           <h2 className="section-heading">Problem</h2>
           <div className="section-content">
@@ -91,7 +80,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
         </section>
 
-        {/* Solution Section */}
         <section className="detail-section solution-section">
           <h2 className="section-heading">Solution</h2>
           <div className="section-content">
@@ -121,7 +109,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
         </section>
 
-        {/* People Section */}
         <section className="detail-section">
           <h2 className="section-heading">Contact</h2>
           <div className="section-content">
@@ -157,7 +144,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
         </section>
 
-        {/* Resources Section */}
         {(entry.resources.links.length > 0 || entry.resources.files.length > 0) && (
           <section className="detail-section">
             <h2 className="section-heading">Resources</h2>
@@ -197,7 +183,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </section>
         )}
 
-        {/* Tags Section */}
         <section className="detail-section">
           <h2 className="section-heading">Tags</h2>
           <div className="section-content">
@@ -209,7 +194,6 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
         </section>
 
-        {/* Rating Section */}
         <section className="detail-section rating-section">
           <h2 className="section-heading">Was this helpful?</h2>
           <div className="section-content">

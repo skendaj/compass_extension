@@ -83,7 +83,6 @@ const SettingsView: React.FC = () => {
     setErrorMessage("");
 
     try {
-      // Temporarily save config for testing
       await shareConfluenceService.setConfig({
         domain,
         email,

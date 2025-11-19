@@ -1,8 +1,6 @@
-// Chrome Storage Service
 import { KnowledgeEntry, User, ConversationTracker } from '../types';
 
 class StorageService {
-  // Knowledge Base Operations
   async saveKnowledgeEntry(entry: KnowledgeEntry): Promise<void> {
     const entries = await this.getAllKnowledgeEntries();
     entries.push(entry);
@@ -44,7 +42,6 @@ class StorageService {
       
       return matchesQuery && matchesTags;
     }).sort((a, b) => {
-      // Sort by relevance (helpfulCount) and recency
       const scoreA = a.metadata.helpfulCount - a.metadata.notHelpfulCount;
       const scoreB = b.metadata.helpfulCount - b.metadata.notHelpfulCount;
       if (scoreA !== scoreB) return scoreB - scoreA;
@@ -72,7 +69,6 @@ class StorageService {
     }
   }
 
-  // User/Expert Operations
   async saveUser(user: User): Promise<void> {
     const users = await this.getAllUsers();
     const index = users.findIndex(u => u.id === user.id);
@@ -113,7 +109,6 @@ class StorageService {
       .map(({ user }) => user);
   }
 
-  // Conversation Tracking
   async saveConversation(conversation: ConversationTracker): Promise<void> {
     const conversations = await this.getAllConversations();
     const index = conversations.findIndex(c => c.id === conversation.id);
@@ -135,11 +130,9 @@ class StorageService {
     return conversations.filter(c => c.status === 'active');
   }
 
-  // Search History
   async saveSearchQuery(query: string): Promise<void> {
     const history = await this.getSearchHistory();
     history.unshift({ query, timestamp: new Date() });
-    // Keep only last 50 searches
     await chrome.storage.local.set({ 
       searchHistory: history.slice(0, 50) 
     });
@@ -150,7 +143,6 @@ class StorageService {
     return result.searchHistory || [];
   }
 
-  // Clear all data (for testing/reset)
   async clearAllData(): Promise<void> {
     await chrome.storage.local.clear();
   }

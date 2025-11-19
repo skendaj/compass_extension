@@ -17,7 +17,6 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
   };
 
   const exampleQueries = [
-    // "How to migrate a contrib project from Vapor 2 to Vapor 3",
     "How to migrate a project to Vapor 3",
     "How do I request medical leave?",
     "Who manages performance reviews?",
@@ -41,26 +40,8 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
           />
         </div>
         <h2>What can we help you with today?</h2>
-        <p>Search for solutions, find experts, or explore our knowledge base</p>
+        <p>Search for solutions, find experts, or explore our knowledge base        </p>
       </div>
-
-      {/*<div className="features-grid">
-        <div className="feature-card">
-          <div className="feature-icon">Search</div>
-          <h4>Smart Search</h4>
-          <p>AI-powered search understands your intent and finds relevant solutions</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">Experts</div>
-          <h4>Find Experts</h4>
-          <p>Connect with team members who have solved similar problems</p>
-        </div>
-        <div className="feature-card">
-          <div className="feature-icon">Knowledge</div>
-          <h4>Knowledge Base</h4>
-          <p>Access documented solutions from past conversations</p>
-        </div>
-      </div>*/}
 
 <div className="examples-section">
         <h3>Popular searches:</h3>

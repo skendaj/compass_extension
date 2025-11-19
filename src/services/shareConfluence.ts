@@ -1,4 +1,3 @@
-// Confluence Blog Post Service
 import { KnowledgeEntry } from "../types";
 
 interface ConfluenceConfig {
@@ -6,18 +5,18 @@ interface ConfluenceConfig {
   email: string;
   apiToken: string;
   spaceId: string; // Can be either space key (e.g., "TEAM") or numeric ID
-  contentType?: "page" | "blogpost"; // Default: page
+  contentType?: "page" | "blogpost";
 }
 
 interface ConfluenceContent {
-  spaceId?: string; // Numeric ID
+  spaceId?: string;
   status: "current" | "draft";
   title: string;
   body: {
     representation: "storage" | "atlas_doc_format";
     value: string;
   };
-  parentId?: string; // For pages - optional parent page
+  parentId?: string;
 }
 
 interface ConfluenceResponse {
@@ -33,17 +32,11 @@ interface ConfluenceResponse {
 class ShareConfluenceService {
   private config: ConfluenceConfig | null = null;
 
-  /**
-   * Initialize Confluence configuration
-   */
   async setConfig(config: ConfluenceConfig): Promise<void> {
     this.config = config;
     await chrome.storage.local.set({ confluenceConfig: config });
   }
 
-  /**
-   * Load Confluence configuration from storage
-   */
   async loadConfig(): Promise<ConfluenceConfig | null> {
     if (this.config) {
       return this.config;
@@ -54,9 +47,6 @@ class ShareConfluenceService {
     return this.config;
   }
 
-  /**
-   * Check if Confluence is configured
-   */
   async isConfigured(): Promise<boolean> {
     const config = await this.loadConfig();
     return !!(
@@ -68,9 +58,6 @@ class ShareConfluenceService {
     );
   }
 
-  /**
-   * Convert KnowledgeEntry to Confluence Storage format (HTML)
-   */
   private convertToStorageFormat(entry: KnowledgeEntry): string {
     let html = `<h2>Problem</h2>`;
     html += `<p>${this.escapeHtml(entry.problem)}</p>`;
@@ -122,9 +109,6 @@ class ShareConfluenceService {
     return html;
   }
 
-  /**
-   * Escape HTML special characters
-   */
   private escapeHtml(text: string): string {
     const map: { [key: string]: string } = {
       "&": "&amp;",
@@ -136,19 +120,14 @@ class ShareConfluenceService {
     return text.replace(/[&<>"']/g, (m) => map[m]);
   }
 
-  /**
-   * Get numeric space ID from space key
-   */
   private async getSpaceId(
     spaceKey: string,
     config: ConfluenceConfig,
   ): Promise<string> {
-    // If it's already numeric, return it
     if (/^\d+$/.test(spaceKey)) {
       return spaceKey;
     }
 
-    // Otherwise, fetch the space to get its numeric ID
     const url = `https://${config.domain}/wiki/api/v2/spaces?keys=${encodeURIComponent(spaceKey)}`;
     const authHeader = this.createAuthHeader(config.email, config.apiToken);
 
@@ -179,9 +158,6 @@ class ShareConfluenceService {
     }
   }
 
-  /**
-   * Search for existing page by title
-   */
   private async findExistingPage(
     title: string,
     spaceId: string,
@@ -214,9 +190,6 @@ class ShareConfluenceService {
     }
   }
 
-  /**
-   * Create a page or blog post on Confluence from a KnowledgeEntry
-   */
   async createBlogPost(entry: KnowledgeEntry): Promise<ConfluenceResponse> {
     const config = await this.loadConfig();
 
@@ -226,10 +199,9 @@ class ShareConfluenceService {
       );
     }
 
-    // Get numeric space ID
     const numericSpaceId = await this.getSpaceId(config.spaceId, config);
 
-    const contentType = config.contentType || "page"; // Default to page
+    const contentType = config.contentType || "page";
     const content: ConfluenceContent = {
       spaceId: numericSpaceId,
       status: "current",
@@ -240,7 +212,6 @@ class ShareConfluenceService {
       },
     };
 
-    // Use different endpoint based on content type
     const endpoint = contentType === "blogpost" ? "blogposts" : "pages";
     const url = `https://${config.domain}/wiki/api/v2/${endpoint}`;
 
@@ -260,7 +231,6 @@ class ShareConfluenceService {
       if (!response.ok) {
         const errorText = await response.text();
 
-        // Check if error is due to duplicate title
         if (
           response.status === 400 &&
           errorText.includes("page already exists with the same TITLE")
@@ -269,7 +239,6 @@ class ShareConfluenceService {
             `${contentType === "blogpost" ? "Blog post" : "Page"} with title "${entry.title}" already exists. Finding existing page...`,
           );
 
-          // Search for the existing page
           const existingPage = await this.findExistingPage(
             entry.title,
             numericSpaceId,
@@ -291,7 +260,6 @@ class ShareConfluenceService {
 
       const result: ConfluenceResponse = await response.json();
 
-      // Log success
       console.log(
         `${contentType === "blogpost" ? "Blog post" : "Page"} created successfully: ${result.title} (ID: ${result.id})`,
       );
@@ -303,9 +271,6 @@ class ShareConfluenceService {
     }
   }
 
-  /**
-   * Create a custom page or blog post with specific content
-   */
   async createCustomPost(
     title: string,
     content: string,
@@ -319,13 +284,12 @@ class ShareConfluenceService {
       );
     }
 
-    // Get numeric space ID
     const numericSpaceId = await this.getSpaceId(
       spaceId || config.spaceId,
       config,
     );
 
-    const contentType = config.contentType || "page"; // Default to page
+    const contentType = config.contentType || "page";
     const contentData: ConfluenceContent = {
       spaceId: numericSpaceId,
       status: "current",
@@ -336,7 +300,6 @@ class ShareConfluenceService {
       },
     };
 
-    // Use different endpoint based on content type
     const endpoint = contentType === "blogpost" ? "blogposts" : "pages";
     const url = `https://${config.domain}/wiki/api/v2/${endpoint}`;
 
@@ -356,7 +319,6 @@ class ShareConfluenceService {
       if (!response.ok) {
         const errorText = await response.text();
 
-        // Check if error is due to duplicate title
         if (
           response.status === 400 &&
           errorText.includes("page already exists with the same TITLE")
@@ -365,7 +327,6 @@ class ShareConfluenceService {
             `${contentType === "blogpost" ? "Blog post" : "Page"} with title "${title}" already exists. Finding existing page...`,
           );
 
-          // Search for the existing page
           const existingPage = await this.findExistingPage(
             title,
             numericSpaceId,
@@ -398,18 +359,12 @@ class ShareConfluenceService {
     }
   }
 
-  /**
-   * Create Basic Auth header
-   */
   private createAuthHeader(email: string, apiToken: string): string {
     const credentials = `${email}:${apiToken}`;
     const base64Credentials = btoa(credentials);
     return `Basic ${base64Credentials}`;
   }
 
-  /**
-   * Test Confluence connection
-   */
   async testConnection(): Promise<boolean> {
     const config = await this.loadConfig();
 
@@ -420,7 +375,6 @@ class ShareConfluenceService {
     }
 
     try {
-      // Try to get the space ID - this will test both authentication and space access
       await this.getSpaceId(config.spaceId, config);
       return true;
     } catch (error) {
@@ -429,9 +383,6 @@ class ShareConfluenceService {
     }
   }
 
-  /**
-   * Get the web URL for a created blog post
-   */
   getWebUrl(response: ConfluenceResponse, config?: ConfluenceConfig): string {
     if (response._links && response._links.webui) {
       const domain = config?.domain || this.config?.domain;
@@ -440,9 +391,6 @@ class ShareConfluenceService {
     return "";
   }
 
-  /**
-   * Clear Confluence configuration
-   */
   async clearConfig(): Promise<void> {
     this.config = null;
     await chrome.storage.local.remove("confluenceConfig");

@@ -1,4 +1,3 @@
-// Mock Data for Development and Demo
 import { User, KnowledgeEntry, DocumentationLink } from '../types';
 
 export const mockUsers: User[] = [
@@ -271,7 +270,6 @@ export const mockDocumentation: DocumentationLink[] = [
   },
 ];
 
-// Function to initialize mock data in storage
 export async function initializeMockData(): Promise<void> {
   await chrome.storage.local.set({
     users: mockUsers,

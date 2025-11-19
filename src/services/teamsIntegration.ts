@@ -1,6 +1,3 @@
-// Microsoft Teams Integration Service
-// Uses Microsoft Graph API to retrieve and summarize chat conversations
-
 interface TeamsConfig {
   clientId: string;
   tenantId: string;
@@ -38,24 +35,17 @@ class TeamsIntegrationService {
   private accessToken: string | null = null;
   private config: TeamsConfig | null = null;
 
-  // Microsoft Graph API endpoints
   private readonly GRAPH_API_BASE = "https://graph.microsoft.com/v1.0";
   private readonly AUTH_ENDPOINT =
     "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize";
   private readonly TOKEN_ENDPOINT =
     "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token";
 
-  /**
-   * Initialize Teams configuration
-   */
   async setConfig(config: TeamsConfig): Promise<void> {
     this.config = config;
     await chrome.storage.local.set({ teamsConfig: config });
   }
 
-  /**
-   * Load Teams configuration from storage
-   */
   async loadConfig(): Promise<TeamsConfig | null> {
     if (this.config) {
       return this.config;
@@ -66,17 +56,11 @@ class TeamsIntegrationService {
     return this.config;
   }
 
-  /**
-   * Check if Teams is configured
-   */
   async isConfigured(): Promise<boolean> {
     const config = await this.loadConfig();
     return !!(config && config.clientId && config.tenantId);
   }
 
-  /**
-   * Authenticate with Microsoft Graph API using OAuth 2.0
-   */
   async authenticate(): Promise<boolean> {
     const config = await this.loadConfig();
     if (!config) {
@@ -111,7 +95,6 @@ class TeamsIntegrationService {
             return;
           }
 
-          // Extract access token from redirect URL
           const urlParams = new URLSearchParams(
             redirectUrl.split("#")[1] || "",
           );
@@ -129,9 +112,6 @@ class TeamsIntegrationService {
     });
   }
 
-  /**
-   * Load saved access token
-   */
   async loadAccessToken(): Promise<string | null> {
     if (this.accessToken) {
       return this.accessToken;
@@ -142,9 +122,6 @@ class TeamsIntegrationService {
     return this.accessToken;
   }
 
-  /**
-   * Make authenticated request to Microsoft Graph API
-   */
   private async graphRequest<T>(
     endpoint: string,
     options: RequestInit = {},
@@ -165,7 +142,6 @@ class TeamsIntegrationService {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expired, need to re-authenticate
         this.accessToken = null;
         await chrome.storage.local.remove("teamsAccessToken");
         throw new Error("Authentication expired. Please re-authenticate.");
@@ -178,17 +154,11 @@ class TeamsIntegrationService {
     return response.json();
   }
 
-  /**
-   * Get all chats for the current user
-   */
   async getChats(): Promise<any[]> {
     const data = await this.graphRequest<{ value: any[] }>("/me/chats");
     return data.value;
   }
 
-  /**
-   * Get chat messages between user and specific person
-   */
   async getChatMessages(
     chatId: string,
     limit: number = 50,
@@ -196,24 +166,19 @@ class TeamsIntegrationService {
     const data = await this.graphRequest<{ value: ChatMessage[] }>(
       `/chats/${chatId}/messages?$top=${limit}&$orderby=createdDateTime desc`,
     );
-    return data.value.reverse(); // Oldest first
+    return data.value.reverse();
   }
 
-  /**
-   * Find chat with specific user by email
-   */
   async findChatWithUser(userEmail: string): Promise<string | null> {
     try {
       const chats = await this.getChats();
 
       for (const chat of chats) {
         if (chat.chatType === "oneOnOne") {
-          // Get chat members
           const membersData = await this.graphRequest<{ value: any[] }>(
             `/chats/${chat.id}/members`,
           );
 
-          // Check if target user is in this chat
           const hasUser = membersData.value.some(
             (member: any) =>
               member.email?.toLowerCase() === userEmail.toLowerCase(),
@@ -232,9 +197,6 @@ class TeamsIntegrationService {
     }
   }
 
-  /**
-   * Get recent messages from chat with specific user
-   */
   async getRecentChatWithUser(
     userEmail: string,
     limit: number = 50,
@@ -248,9 +210,6 @@ class TeamsIntegrationService {
     return this.getChatMessages(chatId, limit);
   }
 
-  /**
-   * Extract key information from chat messages using simple NLP
-   */
   private extractKeyInformation(messages: ChatMessage[]): {
     topics: string[];
     actionItems: string[];
@@ -260,7 +219,6 @@ class TeamsIntegrationService {
     const actionItems: string[] = [];
     const questions: string[] = [];
 
-    // Keywords that indicate action items
     const actionKeywords = [
       "todo",
       "task",
@@ -273,7 +231,6 @@ class TeamsIntegrationService {
       "plan to",
     ];
 
-    // Technical terms and common topics
     const technicalTerms = [
       "api",
       "database",
@@ -297,17 +254,14 @@ class TeamsIntegrationService {
     messages.forEach((msg) => {
       const content = msg.body.content.toLowerCase();
 
-      // Extract questions
       if (content.includes("?")) {
         questions.push(msg.body.content);
       }
 
-      // Extract action items
       if (actionKeywords.some((keyword) => content.includes(keyword))) {
         actionItems.push(msg.body.content);
       }
 
-      // Extract topics based on technical terms
       technicalTerms.forEach((term) => {
         if (content.includes(term)) {
           topics.add(term);
@@ -317,14 +271,11 @@ class TeamsIntegrationService {
 
     return {
       topics: Array.from(topics),
-      actionItems: actionItems.slice(0, 5), // Top 5 action items
-      questions: questions.slice(-3), // Last 3 questions
+      actionItems: actionItems.slice(0, 5),
+      questions: questions.slice(-3),
     };
   }
 
-  /**
-   * Generate a summary of the chat conversation
-   */
   async summarizeChat(userEmail: string): Promise<ChatSummary | null> {
     try {
       const messages = await this.getRecentChatWithUser(userEmail);
@@ -336,20 +287,16 @@ class TeamsIntegrationService {
       const chatId = await this.findChatWithUser(userEmail);
       if (!chatId) return null;
 
-      // Extract information
       const { topics, actionItems, questions } =
         this.extractKeyInformation(messages);
 
-      // Get participants
       const participants = Array.from(
         new Set(messages.map((m) => m.from.user.displayName)),
       );
 
-      // Get time range
       const startTime = messages[0].createdDateTime;
       const endTime = messages[messages.length - 1].createdDateTime;
 
-      // Generate summary text
       const summary = this.generateSummaryText(
         messages,
         topics,
@@ -357,7 +304,6 @@ class TeamsIntegrationService {
         questions,
       );
 
-      // Check if issue was resolved
       const resolution = this.detectResolution(messages);
 
       return {
@@ -377,9 +323,6 @@ class TeamsIntegrationService {
     }
   }
 
-  /**
-   * Generate human-readable summary text
-   */
   private generateSummaryText(
     messages: ChatMessage[],
     topics: string[],
@@ -388,29 +331,24 @@ class TeamsIntegrationService {
   ): string {
     const parts: string[] = [];
 
-    // Overview
     parts.push(
       `Chat conversation with ${messages.length} messages exchanged.`,
     );
 
-    // Topics discussed
     if (topics.length > 0) {
       parts.push(`Main topics: ${topics.join(", ")}.`);
     }
 
-    // Questions asked
     if (questions.length > 0) {
       parts.push(
         `Key questions were asked about implementation and troubleshooting.`,
       );
     }
 
-    // Action items
     if (actionItems.length > 0) {
       parts.push(`${actionItems.length} action items were identified.`);
     }
 
-    // Recent messages summary
     const recentMessages = messages.slice(-5);
     const hasCode = recentMessages.some((m) =>
       m.body.content.includes("```"),
@@ -429,9 +367,6 @@ class TeamsIntegrationService {
     return parts.join(" ");
   }
 
-  /**
-   * Detect if the issue was resolved based on message content
-   */
   private detectResolution(messages: ChatMessage[]): string | undefined {
     const resolutionKeywords = [
       "solved",
@@ -446,7 +381,6 @@ class TeamsIntegrationService {
       "issue fixed",
     ];
 
-    // Check last 5 messages for resolution indicators
     const recentMessages = messages.slice(-5);
 
     for (const msg of recentMessages) {
@@ -459,15 +393,11 @@ class TeamsIntegrationService {
     return undefined;
   }
 
-  /**
-   * Save chat summary as a knowledge entry
-   */
   async saveAsKnowledgeEntry(
     summary: ChatSummary,
     originalQuery: string,
     expertEmail: string,
   ): Promise<void> {
-    // This would integrate with your storage service
     const knowledgeEntry = {
       id: `chat-${summary.chatId}-${Date.now()}`,
       title: `Resolved: ${originalQuery}`,
@@ -488,21 +418,13 @@ class TeamsIntegrationService {
     };
 
     console.log("Knowledge entry created from chat:", knowledgeEntry);
-    // Save to storage service
-    // await storageService.saveKnowledgeEntry(knowledgeEntry);
   }
 
-  /**
-   * Clear authentication
-   */
   async logout(): Promise<void> {
     this.accessToken = null;
     await chrome.storage.local.remove("teamsAccessToken");
   }
 
-  /**
-   * Clear all configuration
-   */
   async clearConfig(): Promise<void> {
     this.config = null;
     this.accessToken = null;

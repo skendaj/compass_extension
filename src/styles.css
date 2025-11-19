@@ -13,7 +13,6 @@ body {
   background: #f5f7fa;
 }
 
-/* Loading Spinner */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -45,17 +44,14 @@ body {
 }
 
 .app-container {
-  /*width: 800px;*/
   width: 100%;
   min-height: 800px;
-  /*max-height: 1200px;*/
   height: 100%;
   display: flex;
   flex-direction: column;
   background: #ffffff;
 }
 
-/* Header */
 .header {
   background: #002233;
   color: white;
@@ -159,14 +155,12 @@ body {
   font-weight: 600;
 }
 
-/* Main Content */
 .main-content {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
 }
 
-/* Footer */
 .footer {
   padding: 12px 20px;
   background: #f8f9fb;
@@ -176,7 +170,6 @@ body {
   text-align: center;
 }
 
-/* Search View */
 .search-view {
   display: flex;
   flex-direction: column;
@@ -349,7 +342,6 @@ body {
   line-height: 1.4;
 }
 
-/* Results View */
 .results-view {
   display: flex;
   flex-direction: column;
@@ -442,7 +434,6 @@ body {
   gap: 12px;
 }
 
-/* Result Cards */
 .result-card {
   padding: 16px;
   background: white;
@@ -607,7 +598,6 @@ body {
   color: #6b7280;
 }
 
-/* Expert Card */
 .expert-card {
   cursor: default;
 }
@@ -744,7 +734,6 @@ body {
   background: #e5e7eb;
 }
 
-/* Documentation Card */
 .doc-card {
   position: relative;
 }
@@ -768,7 +757,6 @@ body {
   text-transform: capitalize;
 }
 
-/* Detail View */
 .detail-view {
   display: flex;
   flex-direction: column;
@@ -1110,7 +1098,6 @@ body {
   font-weight: 600;
 }
 
-/* History View */
 .history-view {
   display: flex;
   flex-direction: column;
@@ -1178,7 +1165,6 @@ body {
   color: #9ca3af;
 }
 
-/* Empty States */
 .empty-state,
 .no-results {
   text-align: center;
@@ -1204,7 +1190,6 @@ body {
   color: #6b7280;
 }
 
-/* Scrollbar Styling */
 .main-content::-webkit-scrollbar {
   width: 8px;
 }

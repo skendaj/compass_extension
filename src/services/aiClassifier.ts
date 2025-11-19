@@ -1,4 +1,3 @@
-// AI Classification Service
 import { ClassificationResult, QueryCategory } from '../types';
 
 export class AIClassifier {
@@ -32,11 +31,9 @@ export class AIClassifier {
   classify(query: string): ClassificationResult {
     const lowerQuery = query.toLowerCase();
     
-    // Count keyword matches
     const engMatches = this.countKeywordMatches(lowerQuery, this.engineeringKeywords);
     const hrMatches = this.countKeywordMatches(lowerQuery, this.hrKeywords);
     
-    // Extract matched keywords
     const matchedKeywords: string[] = [];
     
     let category: QueryCategory;
@@ -58,7 +55,7 @@ export class AIClassifier {
     return {
       category,
       confidence,
-      keywords: matchedKeywords.slice(0, 5) // Top 5 keywords
+      keywords: matchedKeywords.slice(0, 5)
     };
   }
 
@@ -71,7 +68,6 @@ export class AIClassifier {
   }
 
   private calculateConfidence(matches: number, totalWords: number): number {
-    // Confidence based on match density
     const density = matches / Math.max(totalWords, 1);
     return Math.min(0.95, 0.5 + density);
   }
@@ -80,7 +76,6 @@ export class AIClassifier {
     const lowerQuery = query.toLowerCase();
     const terms = this.getMatchedKeywords(lowerQuery, this.engineeringKeywords);
     
-    // Also extract capitalized terms (likely technical terms)
     const capitalizedTerms = query.match(/\b[A-Z][a-zA-Z0-9]+\b/g) || [];
     
     return [...new Set([...terms, ...capitalizedTerms.map(t => t.toLowerCase())])];

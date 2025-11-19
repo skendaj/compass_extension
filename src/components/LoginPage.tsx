@@ -29,7 +29,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       
       if (result.success) {
         console.log('[LoginPage] Login successful, reloading app...');
-        // Auth context will automatically update from storage
         window.location.reload();
       } else {
         console.error('[LoginPage] Login failed:', result.error);

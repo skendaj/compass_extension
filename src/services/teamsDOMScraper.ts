@@ -1,6 +1,3 @@
-// Teams DOM Scraper Service
-// Extracts chat messages directly from the Teams web interface DOM
-
 export interface TeamsChatMessage {
   timestamp: string;
   sender: string;
@@ -19,9 +16,6 @@ export interface TeamsChatSummary {
   extractedAt: string;
 }
 
-/**
- * Detects if the current page is Microsoft Teams
- */
 export function isTeamsPage(): boolean {
   const url = window.location.href;
   return (
@@ -31,13 +25,9 @@ export function isTeamsPage(): boolean {
   );
 }
 
-/**
- * Extracts chat messages from the Teams DOM
- */
 export function extractTeamsMessages(): TeamsChatMessage[] {
   const messages: TeamsChatMessage[] = [];
 
-  // Try multiple selectors as Teams DOM structure can vary
   const messageSelectors = [
     '[data-tid="chat-pane-message"]',
     '[data-tid="message-pane-item"]',
@@ -49,7 +39,6 @@ export function extractTeamsMessages(): TeamsChatMessage[] {
 
   let messageElements: NodeListOf<Element> | null = null;
 
-  // Find which selector works
   for (const selector of messageSelectors) {
     const elements = document.querySelectorAll(selector);
     if (elements.length > 0) {
@@ -78,11 +67,7 @@ export function extractTeamsMessages(): TeamsChatMessage[] {
   return messages;
 }
 
-/**
- * Extracts a single message from a DOM element
- */
 function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | null {
-  // Try to find sender name
   const senderSelectors = [
     '[data-tid="message-author-name"]',
     '[class*="author"]',
@@ -99,7 +84,6 @@ function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | nul
     }
   }
 
-  // If no specific sender element, look for aria-label or data attributes
   if (sender === 'Unknown') {
     const ariaLabel = element.getAttribute('aria-label');
     if (ariaLabel) {
@@ -110,7 +94,6 @@ function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | nul
     }
   }
 
-  // Try to find message content
   const contentSelectors = [
     '[data-tid="message-body-content"]',
     '[class*="message-body"]',
@@ -128,18 +111,19 @@ function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | nul
     }
   }
 
-  // Fallback: get all text content excluding sender
   if (!content) {
     const allText = element.textContent?.trim() || '';
     content = allText.replace(sender, '').trim();
   }
 
-  // Skip empty messages
   if (!content || content.length === 0) {
     return null;
   }
 
-  // Try to find timestamp
+  const timestampSelectors = [
+    return null;
+  }
+
   const timestampSelectors = [
     '[data-tid="message-timestamp"]',
     'time',
@@ -164,7 +148,6 @@ function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | nul
     }
   }
 
-  // Check if this is the current user's message
   const isCurrentUser =
     element.classList.contains('me') ||
     element.classList.contains('current-user') ||
@@ -179,14 +162,9 @@ function extractMessageFromElement(element: HTMLElement): TeamsChatMessage | nul
   };
 }
 
-/**
- * Creates a summary of the extracted chat
- */
 export function createChatSummary(messages: TeamsChatMessage[]): TeamsChatSummary {
-  // Extract unique participants
   const participants = Array.from(new Set(messages.map(m => m.sender)));
 
-  // Get date range
   const timestamps = messages
     .map(m => {
       try {
@@ -217,9 +195,6 @@ export function createChatSummary(messages: TeamsChatMessage[]): TeamsChatSummar
   };
 }
 
-/**
- * Formats the chat summary as text for display or saving
- */
 export function formatChatSummary(summary: TeamsChatSummary): string {
   const startDate = new Date(summary.dateRange.start).toLocaleString();
   const endDate = new Date(summary.dateRange.end).toLocaleString();
@@ -230,7 +205,6 @@ export function formatChatSummary(summary: TeamsChatSummary): string {
   formatted += `**Date Range:** ${startDate} - ${endDate}\n\n`;
   formatted += `---\n\n`;
 
-  // Group messages by conversation flow
   summary.messages.forEach((msg, index) => {
     const timestamp = new Date(msg.timestamp).toLocaleString();
     formatted += `### ${msg.sender}\n`;
@@ -245,9 +219,6 @@ export function formatChatSummary(summary: TeamsChatSummary): string {
   return formatted;
 }
 
-/**
- * Generates an AI-style summary of key points (basic extraction)
- */
 export function generateKeySummary(summary: TeamsChatSummary): {
   overview: string;
   keyPoints: string[];
@@ -256,7 +227,6 @@ export function generateKeySummary(summary: TeamsChatSummary): {
 } {
   const allText = summary.messages.map(m => m.content).join(' ').toLowerCase();
 
-  // Simple keyword-based extraction
   const actionKeywords = ['todo', 'will do', 'need to', 'should', 'must', 'action item', 'task'];
   const questionKeywords = ['?', 'how', 'what', 'when', 'where', 'why', 'who'];
 
@@ -268,43 +238,35 @@ export function generateKeySummary(summary: TeamsChatSummary): {
     const content = msg.content;
     const lower = content.toLowerCase();
 
-    // Detect action items
     if (actionKeywords.some(keyword => lower.includes(keyword))) {
       actionItems.push(`${msg.sender}: ${content}`);
     }
 
-    // Detect questions
     if (questionKeywords.some(keyword => lower.includes(keyword)) || content.includes('?')) {
       questions.push(`${msg.sender}: ${content}`);
     }
 
-    // Extract longer messages as key points (more than 50 chars, not questions)
     if (content.length > 50 && !content.includes('?')) {
       keyPoints.push(`${msg.sender}: ${content}`);
     }
   });
 
-  // Create overview
   const overview = `Chat conversation between ${summary.participants.join(', ')} with ${summary.messageCount} messages. ` +
     `Discussion took place from ${new Date(summary.dateRange.start).toLocaleDateString()} to ${new Date(summary.dateRange.end).toLocaleDateString()}.`;
 
   return {
     overview,
-    keyPoints: keyPoints.slice(0, 5), // Top 5 key points
-    actionItems: actionItems.slice(0, 5), // Top 5 action items
-    questions: questions.slice(0, 5), // Top 5 questions
+    keyPoints: keyPoints.slice(0, 5),
+    actionItems: actionItems.slice(0, 5),
+    questions: questions.slice(0, 5),
   };
 }
 
-/**
- * Detects the current chat/conversation context
- */
 export function detectChatContext(): {
   chatName?: string;
   chatType?: 'one-on-one' | 'group' | 'channel';
   channelName?: string;
 } {
-  // Try to find chat or channel name
   const titleSelectors = [
     '[data-tid="channel-name"]',
     '[data-tid="chat-header-title"]',
@@ -321,14 +283,12 @@ export function detectChatContext(): {
     }
   }
 
-  // Detect chat type from URL or DOM
   const url = window.location.href;
   let chatType: 'one-on-one' | 'group' | 'channel' | undefined;
 
   if (url.includes('/channel/')) {
     chatType = 'channel';
   } else if (url.includes('/conversations/')) {
-    // Check if it's a group chat
     const participantCount = document.querySelectorAll('[data-tid="chat-participant"]').length;
     chatType = participantCount > 2 ? 'group' : 'one-on-one';
   }
@@ -340,9 +300,6 @@ export function detectChatContext(): {
   };
 }
 
-/**
- * Main function to extract and process Teams chat
- */
 export async function extractTeamsChat(): Promise<{
   summary: TeamsChatSummary;
   formattedText: string;

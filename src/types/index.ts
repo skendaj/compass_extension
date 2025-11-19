@@ -1,5 +1,3 @@
-// Data Models for TeamSystem Navify
-
 export interface User {
   id: string;
   name: string;
@@ -122,7 +120,6 @@ export interface ClassificationResult {
   keywords: string[];
 }
 
-// Graph types for KnowledgeGraph
 export interface GraphNode {
   id: string;
   label: string;

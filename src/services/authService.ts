@@ -1,8 +1,3 @@
-/**
- * Authentication Service
- * Handles TSID OAuth flow and token management
- */
-
 export interface AuthToken {
   access_token: string;
   token_type: string;
@@ -17,27 +12,21 @@ export interface UserProfile {
 }
 
 class AuthService {
-  // Set to true to bypass OAuth for testing
   private readonly DEV_MODE = true;
   
   private readonly TSID_AUTH_URL = 'https://id.teamsystem.com/auth/login';
   private readonly TSID_TOKEN_URL = 'https://id.teamsystem.com/token';
   private readonly TSID_USER_URL = 'https://id.teamsystem.com/userinfo';
-  private readonly CLIENT_ID = 'navify-extension'; // Replace with your actual client ID
+  private readonly CLIENT_ID = 'navify-extension';
 
-  /**
-   * Initiate TSID OAuth login flow
-   */
   async login(): Promise<{ success: boolean; error?: string }> {
     console.log('[AuthService] Starting login flow...');
     
-    // Development mode - bypass OAuth
     if (this.DEV_MODE) {
       console.warn('[AuthService] DEV_MODE is enabled - bypassing OAuth!');
       console.log('[AuthService] Creating fake authentication...');
       console.log('[AuthService] Simulating authentication delay...');
       
-      // Simulate realistic authentication delay (2-3 seconds)
       await new Promise(resolve => setTimeout(resolve, 3200));
       
       const fakeUser: UserProfile = {
@@ -60,7 +49,6 @@ class AuthService {
       return { success: true };
     }
     
-    // Real OAuth flow
     console.log('[AuthService] Configuration check:');
     console.log('  - TSID_AUTH_URL:', this.TSID_AUTH_URL);
     console.log('  - CLIENT_ID:', this.CLIENT_ID);
@@ -71,7 +59,6 @@ class AuthService {
       console.log('[AuthService] Redirect URI:', redirectUri);
       console.log('[AuthService] Extension ID:', chrome.runtime.id);
       
-      // Construct authorization URL
       console.log('[AuthService] Constructing authorization URL...');
       const authUrl = new URL(this.TSID_AUTH_URL);
       authUrl.searchParams.set('client_id', this.CLIENT_ID);
@@ -94,7 +81,6 @@ class AuthService {
       console.warn('[AuthService] Try opening this URL in a new tab to verify it works:');
       console.warn('   ', fullAuthUrl);
       
-      // Launch OAuth flow
       const responseUrl = await chrome.identity.launchWebAuthFlow({
         url: fullAuthUrl,
         interactive: true,
@@ -107,7 +93,6 @@ class AuthService {
         return { success: false, error: 'No response from authentication server' };
       }
 
-      // Parse token from redirect URL
       console.log('[AuthService] Parsing token from response...');
       const token = this.parseTokenFromUrl(responseUrl);
       
@@ -122,7 +107,6 @@ class AuthService {
         has_access_token: !!token.access_token
       });
 
-      // Get user profile
       console.log('[AuthService] Fetching user profile...');
       const userProfile = await this.getUserProfile(token.access_token);
       
@@ -133,7 +117,6 @@ class AuthService {
 
       console.log('[AuthService] User profile retrieved:', userProfile);
 
-      // Store auth data
       console.log('[AuthService] Storing auth data...');
       await this.storeAuthData(token, userProfile);
       console.log('[AuthService] Auth data stored successfully');
@@ -142,7 +125,6 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] Login error:', error);
       
-      // Extract detailed error information
       let errorMessage = 'Unknown error occurred';
       let errorDetails: any = {};
       
@@ -172,9 +154,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Parse access token from OAuth redirect URL
-   */
   private parseTokenFromUrl(url: string): AuthToken | null {
     console.log('[AuthService] Parsing token from URL:', url);
     
@@ -188,12 +167,11 @@ class AuthService {
         hash: urlObj.hash
       });
       
-      const hash = urlObj.hash.substring(1); // Remove leading #
+      const hash = urlObj.hash.substring(1);
       console.log('[AuthService] Hash parameters:', hash);
       
       const params = new URLSearchParams(hash);
       
-      // Log all parameters
       const allParams: any = {};
       params.forEach((value, key) => {
         allParams[key] = key === 'access_token' ? value.substring(0, 20) + '...' : value;
@@ -222,9 +200,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Get user profile from TSID
-   */
   private async getUserProfile(accessToken: string): Promise<UserProfile | null> {
     console.log('[AuthService] Fetching user profile from:', this.TSID_USER_URL);
     
@@ -271,9 +246,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Store authentication data in Chrome storage
-   */
   private async storeAuthData(token: AuthToken, user: UserProfile): Promise<void> {
     await chrome.storage.local.set({
       authToken: token.access_token,
@@ -282,9 +254,6 @@ class AuthService {
     });
   }
 
-  /**
-   * Check if user is authenticated
-   */
   async isAuthenticated(): Promise<boolean> {
     console.log('[AuthService] Checking authentication status...');
     
@@ -304,7 +273,6 @@ class AuthService {
         return false;
       }
 
-      // Check if token is expired
       if (Date.now() > result.tokenExpiry) {
         console.log('[AuthService] Token expired, logging out');
         await this.logout();
@@ -319,9 +287,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Get current auth token
-   */
   async getToken(): Promise<string | null> {
     try {
       const result = await chrome.storage.local.get(['authToken', 'tokenExpiry']);
@@ -330,7 +295,6 @@ class AuthService {
         return null;
       }
 
-      // Check if token is expired
       if (Date.now() > result.tokenExpiry) {
         await this.logout();
         return null;
@@ -343,9 +307,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Logout and clear stored data
-   */
   async logout(): Promise<void> {
     await chrome.storage.local.remove(['authToken', 'tokenExpiry', 'user']);
   }

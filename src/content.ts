@@ -1,14 +1,10 @@
-// Content Script - Floating Widget like Loom
 import { extractTeamsChat, isTeamsPage } from "./services/teamsDOMScraper";
 
-// Create and inject the floating widget
 function createFloatingWidget() {
-  // Check if widget already exists
   if (document.getElementById("team-knowledge-widget")) {
     return;
   }
 
-  // Create widget container
   const widget = document.createElement("div");
   widget.id = "team-knowledge-widget";
   widget.innerHTML = `
@@ -19,7 +15,6 @@ function createFloatingWidget() {
     </div>
   `;
 
-  // Add styles
   const style = document.createElement("style");
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
@@ -62,7 +57,6 @@ function createFloatingWidget() {
       color: white;
     }
 
-    /* Modal styles */
     .tkw-modal {
       position: fixed;
       top: 0;
@@ -152,7 +146,6 @@ function createFloatingWidget() {
       border: none;
     }
 
-    /* Mobile responsive */
     @media (max-width: 768px) {
       #team-knowledge-widget {
         bottom: 16px;
@@ -182,16 +175,13 @@ function createFloatingWidget() {
   document.head.appendChild(style);
   document.body.appendChild(widget);
 
-  // Add click handler
   const button = document.getElementById("tkw-button");
   if (button) {
     button.addEventListener("click", () => openModal());
   }
 }
 
-// Open modal with extension popup
 function openModal(params?: string) {
-  // Check if modal already exists
   if (document.getElementById("tkw-modal")) {
     return;
   }
@@ -216,24 +206,20 @@ function openModal(params?: string) {
 
   document.body.appendChild(modal);
 
-  // Close modal handlers
   const closeBtn = document.getElementById("tkw-close-modal");
   if (closeBtn) {
     closeBtn.addEventListener("click", closeModal);
   }
 
-  // Click outside to close
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       closeModal();
     }
   });
 
-  // ESC key to close
   document.addEventListener("keydown", handleEscKey);
 }
 
-// Close modal
 function closeModal() {
   const modal = document.getElementById("tkw-modal");
   if (modal) {
@@ -245,14 +231,12 @@ function closeModal() {
   document.removeEventListener("keydown", handleEscKey);
 }
 
-// Handle ESC key
 function handleEscKey(e: KeyboardEvent) {
   if (e.key === "Escape") {
     closeModal();
   }
 }
 
-// Add fadeOut animation
 const fadeOutStyle = document.createElement("style");
 fadeOutStyle.textContent = `
   @keyframes tkw-fadeOut {
@@ -263,9 +247,6 @@ fadeOutStyle.textContent = `
 `;
 document.head.appendChild(fadeOutStyle);
 
-// Draggable function removed - widget is now static
-
-// Listen for deep link clicks
 document.addEventListener(
   "click",
   (e) => {
@@ -275,13 +256,11 @@ document.addEventListener(
     if (link && link.href) {
       const href = link.href;
 
-      // Check if it's a knowledge link
       if (href.includes("knowledge.company.com")) {
         console.log("Knowledge link clicked:", href);
         e.preventDefault();
         e.stopPropagation();
 
-        // Parse the URL
         try {
           const url = new URL(href);
           const pathParts = url.pathname.split("/").filter((p) => p);
@@ -307,9 +286,8 @@ document.addEventListener(
     }
   },
   true,
-); // Use capture phase to intercept before other handlers
+);
 
-// Also check current page URL on load
 function checkCurrentPageUrl() {
   const url = window.location.href;
 
@@ -322,7 +300,6 @@ function checkCurrentPageUrl() {
 
       if (pathParts[0] === "entry" && pathParts[1]) {
         console.log("Auto-opening entry from URL:", pathParts[1]);
-        // Small delay to ensure widget is created
         setTimeout(() => {
           openModal(`entry=${pathParts[1]}`);
         }, 500);
@@ -341,9 +318,7 @@ function checkCurrentPageUrl() {
   }
 }
 
-// Teams Chat Capture functionality
 function createTeamsCaptureButton() {
-  // Check if we're on Teams and button doesn't exist
   if (!isTeamsPage() || document.getElementById("tkw-teams-capture-btn")) {
     return;
   }
@@ -361,7 +336,6 @@ function createTeamsCaptureButton() {
     </button>
   `;
 
-  // Add styles for Teams capture button
   const style = document.createElement("style");
   style.textContent = `
     #tkw-teams-capture-btn {
@@ -586,7 +560,6 @@ function createTeamsCaptureButton() {
   document.head.appendChild(style);
   document.body.appendChild(captureButton);
 
-  // Add click handler
   const button = captureButton.querySelector(".tkw-teams-capture-button");
   if (button) {
     button.addEventListener("click", handleTeamsCaptureClick);
@@ -602,7 +575,6 @@ async function handleTeamsCaptureClick() {
   ) as HTMLElement;
   if (!button) return;
 
-  // Show loading state
   button.classList.add("tkw-teams-capture-loading");
   const originalText = button.innerHTML;
   button.innerHTML = `
@@ -613,7 +585,6 @@ async function handleTeamsCaptureClick() {
     <span>Capturing...</span>
   `;
 
-  // Add spinning animation
   const spinStyle = document.createElement("style");
   spinStyle.textContent = `
     @keyframes spin {
@@ -634,7 +605,6 @@ async function handleTeamsCaptureClick() {
       `Error capturing chat: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   } finally {
-    // Restore button
     button.classList.remove("tkw-teams-capture-loading");
     button.innerHTML = originalText;
   }
@@ -642,7 +612,6 @@ async function handleTeamsCaptureClick() {
 
 function showTeamsChatModal(chatData: any) {
   console.log("[Teams Capture] Showing modal with chat data");
-  // Remove existing modal if any
   const existingModal = document.getElementById("tkw-teams-chat-modal");
   if (existingModal) {
     existingModal.remove();
@@ -731,7 +700,6 @@ function showTeamsChatModal(chatData: any) {
 
   document.body.appendChild(modal);
 
-  // Add event listeners
   const closeBtn = document.getElementById("tkw-close-teams-modal");
   if (closeBtn) {
     closeBtn.addEventListener("click", () => modal.remove());
@@ -760,7 +728,6 @@ function showTeamsChatModal(chatData: any) {
     saveBtn.addEventListener("click", () => {
       console.log("[Teams Capture] Save button clicked");
       modal.remove();
-      // Open Navify with the chat data pre-filled
       const params = new URLSearchParams({
         action: "new-from-teams",
         title: chatTitle,
@@ -774,7 +741,6 @@ function showTeamsChatModal(chatData: any) {
     });
   }
 
-  // Click outside to close
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.remove();
@@ -782,19 +748,16 @@ function showTeamsChatModal(chatData: any) {
   });
 }
 
-// Check if we should create Teams capture button
 function checkAndInitTeamsCapture() {
   if (isTeamsPage()) {
     console.log(
       "[Teams Capture] Teams page detected! URL:",
       window.location.href,
     );
-    // Wait a bit for Teams to load
     setTimeout(() => {
       createTeamsCaptureButton();
     }, 2000);
 
-    // Also watch for navigation changes in Teams SPA
     const observer = new MutationObserver(() => {
       if (!document.getElementById("tkw-teams-capture-btn")) {
         console.log("[Teams Capture] Button missing, recreating...");
@@ -811,7 +774,6 @@ function checkAndInitTeamsCapture() {
   }
 }
 
-// Initialize widget when page loads
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     createFloatingWidget();
@@ -824,5 +786,4 @@ if (document.readyState === "loading") {
   checkAndInitTeamsCapture();
 }
 
-// Export for TypeScript
 export {};
