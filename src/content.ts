@@ -12,8 +12,8 @@ function createFloatingWidget() {
   widget.id = "team-knowledge-widget";
   widget.innerHTML = `
     <div class="tkw-floating-button" id="tkw-button" title="TeamSystem Navify">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffffff" viewBox="0 0 256 256">
-
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM7 11.5L16 8L12.5 17.0021L11 13L7 11.5Z"></path>
       </svg>
     </div>
   `;
@@ -33,24 +33,32 @@ function createFloatingWidget() {
 
     .tkw-floating-button {
       position: relative;
-      width: 68px;
-      height: 68px;
-      background: #01BEE7;
-      box-shadow: 0 2px 8px rgba(0, 34, 51, 0.2);
+      width: 60px;
+      height: 60px;
+      background: #7E85FD;
+      border-radius: 50%;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(126, 133, 253, 0.4);
+      margin: 20px;
     }
 
     .tkw-floating-button:hover {
-      background: #00a8cf;
-      box-shadow: 0 4px 12px rgba(0, 34, 51, 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(126, 133, 253, 0.6);
     }
 
     .tkw-floating-button:active {
-      transform: scale(0.98);
+      transform: scale(0.95);
+    }
+
+    .tkw-floating-button svg {
+      width: 28px;
+      height: 28px;
+      color: white;
     }
 
     /* Modal styles */
@@ -152,6 +160,12 @@ function createFloatingWidget() {
       .tkw-floating-button {
         width: 56px;
         height: 56px;
+        margin: 16px;
+      }
+
+      .tkw-floating-button svg {
+        width: 24px;
+        height: 24px;
       }
 
       .tkw-modal-content {
@@ -169,7 +183,7 @@ function createFloatingWidget() {
   // Add click handler
   const button = document.getElementById("tkw-button");
   if (button) {
-    button.addEventListener("click", openModal);
+    button.addEventListener("click", () => openModal());
   }
 }
 
