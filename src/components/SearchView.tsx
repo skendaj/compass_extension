@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
+import ScreenCaptureButton from "./ScreenCaptureButton";
 
 interface SearchViewProps {
   onSearch: (query: string) => void;
@@ -8,6 +9,18 @@ interface SearchViewProps {
 
 const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
   const [query, setQuery] = useState("");
+
+  const handleTextExtracted = (text: string) => {
+    console.log('📥 Text received in SearchView:', text);
+    setQuery(text);
+  };
+
+  const handleAutoSearch = (text: string) => {
+    console.log('🚀 Triggering automatic search with:', text);
+    if (text.trim()) {
+      onSearch(text.trim());
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,13 +88,19 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
             autoFocus
           />
         </div>
-        <button
-          type="submit"
-          className="search-submit-btn"
-          disabled={isLoading || !query.trim()}
-        >
-          {isLoading ? "Searching..." : "Search"}
-        </button>
+        <div className="search-actions">
+          <ScreenCaptureButton 
+            onTextExtracted={handleTextExtracted}
+            onAutoSearch={handleAutoSearch}
+          />
+          <button
+            type="submit"
+            className="search-submit-btn"
+            disabled={isLoading || !query.trim()}
+          >
+            {isLoading ? "Searching..." : "Search"}
+          </button>
+        </div>
       </form>
 
       <div className="examples-section">

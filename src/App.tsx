@@ -68,8 +68,36 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const entryId = urlParams.get("entry");
     const searchQuery = urlParams.get("q");
+    const ocrMode = urlParams.get("ocr");
 
-    if (entryId) {
+    if (ocrMode === 'true') {
+      console.log('🔍 OCR mode detected, processing image...');
+      // Check for pending OCR image
+      chrome.storage.local.get(['pendingOCR'], async (result) => {
+        if (result.pendingOCR) {
+          console.log('📸 Found pending OCR image, extracting text...');
+          // Import screen capture service dynamically
+          const { screenCaptureService } = await import('./services/screenCaptureService');
+          
+          try {
+            const text = await screenCaptureService.extractTextFromImage(result.pendingOCR);
+            console.log('✅ OCR completed:', text);
+            
+            // Clear pending OCR
+            chrome.storage.local.remove(['pendingOCR']);
+            
+            // Trigger search with extracted text
+            if (text && text.trim()) {
+              handleSearch(text.trim());
+            }
+          } catch (error) {
+            console.error('❌ OCR failed:', error);
+            // Clear pending OCR even on error
+            chrome.storage.local.remove(['pendingOCR']);
+          }
+        }
+      });
+    } else if (entryId) {
       const entry = await storageService.getKnowledgeEntryById(entryId);
       if (entry) {
         handleViewDetail(entry);

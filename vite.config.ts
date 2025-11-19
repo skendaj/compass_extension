@@ -12,6 +12,17 @@ export default defineConfig({
         // Copy manifest.json
         copyFileSync('manifest.json', 'dist/manifest.json');
         
+        // Copy offscreen.html
+        copyFileSync('src/offscreen.html', 'dist/offscreen.html');
+        
+        // Copy tessdata directory for OCR
+        if (existsSync('public/tessdata')) {
+          if (!existsSync('dist/tessdata')) {
+            mkdirSync('dist/tessdata', { recursive: true });
+          }
+          cpSync('public/tessdata', 'dist/tessdata', { recursive: true });
+        }
+        
         // Create icons directory if it doesn't exist
         if (!existsSync('dist/icons')) {
           mkdirSync('dist/icons', { recursive: true });
@@ -57,6 +68,7 @@ export default defineConfig({
         index: resolve(__dirname, 'index.html'),
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
+        offscreen: resolve(__dirname, 'src/offscreen.ts'),
       },
       output: {
         entryFileNames: '[name].js',

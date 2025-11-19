@@ -8,7 +8,11 @@
     "activeTab",
     "tabs",
     "contextMenus",
-    "identity"
+    "identity",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ],
   "oauth2": {
     "client_id": "navify-extension",
@@ -34,7 +38,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["index.html", "assets/*"],
+      "resources": ["index.html", "assets/*", "tesseract/*", "tessdata/*"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -42,6 +46,9 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https://tessdata.projectnaptha.com https://api.ocr.space data: blob:"
   }
 }
 

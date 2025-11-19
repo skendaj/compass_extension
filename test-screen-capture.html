@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Capture Test - Sample Chat Messages</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #002233;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.8;
+        }
+        
+        .chat-container {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #01bee7;
+            border-radius: 4px;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .author {
+            font-weight: 600;
+            color: #002233;
+        }
+        
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .message-content {
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .error-message {
+            background: #fee;
+            border-left-color: #f44;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h2 {
+            margin-top: 0;
+            color: #856404;
+        }
+        
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📸 Screen Capture Test Page</h2>
+        <p><strong>How to test the screen capture feature:</strong></p>
+        <ol>
+            <li>Load the Navify extension in your browser</li>
+            <li>Click the "Capture Text" button in the search view</li>
+            <li>Select any of the chat messages below by dragging your mouse</li>
+            <li>The text will be extracted and populated in the search box</li>
+            <li>Press ESC to cancel the selection</li>
+        </ol>
+    </div>
+
+    <div class="header">
+        <h1>Team Chat - Engineering Channel</h1>
+        <p>Sample conversation about API errors</p>
+    </div>
+    
+    <div class="chat-container">
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Sarah Johnson</span>
+                <span class="timestamp">10:23 AM</span>
+            </div>
+            <div class="message-content">
+                Hey team, I'm getting a 500 error when calling the /api/users endpoint in production. It works fine in staging. Any ideas?
+            </div>
+        </div>
+
+        <div class="message error-message">
+            <div class="message-header">
+                <span class="author">Sarah Johnson</span>
+                <span class="timestamp">10:24 AM</span>
+            </div>
+            <div class="message-content">
+                Error: Internal Server Error<br>
+                Status: 500<br>
+                Endpoint: /api/users<br>
+                Timestamp: 2024-11-19T10:23:45Z
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">John Smith</span>
+                <span class="timestamp">10:26 AM</span>
+            </div>
+            <div class="message-content">
+                I've seen this before! It's usually related to database connection pool exhaustion during high traffic. Check your connection pool settings.
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">John Smith</span>
+                <span class="timestamp">10:27 AM</span>
+            </div>
+            <div class="message-content">
+                Try increasing the pool size in your production config:
+                <div class="code-block">
+pool: {
+    max: 50,
+    min: 10,
+    acquire: 30000,
+    idle: 10000
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Andrea Vitali</span>
+                <span class="timestamp">10:30 AM</span>
+            </div>
+            <div class="message-content">
+                Also add monitoring to track connection pool usage. We had the same issue last month and this config fixed it.
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Sarah Johnson</span>
+                <span class="timestamp">10:35 AM</span>
+            </div>
+            <div class="message-content">
+                That worked! Thank you so much! Increased the pool size and added monitoring. No more 500 errors. 🎉
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Mike Chen</span>
+                <span class="timestamp">11:15 AM</span>
+            </div>
+            <div class="message-content">
+                Quick question - how do I request parental leave? Need to submit paperwork soon.
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Jane Smith (HR)</span>
+                <span class="timestamp">11:18 AM</span>
+            </div>
+            <div class="message-content">
+                Hi Mike! You need to:
+                1. Fill out the parental leave request form on the HR portal
+                2. Get manager approval
+                3. Submit at least 2 weeks before your intended leave date
+                4. HR will send you confirmation within 3 business days
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">David Lee</span>
+                <span class="timestamp">2:45 PM</span>
+            </div>
+            <div class="message-content">
+                Anyone know how to setup CI/CD pipeline for our new React app? Looking for best practices.
+            </div>
+        </div>
+
+        <div class="message">
+            <div class="message-header">
+                <span class="author">Sarah Johnson</span>
+                <span class="timestamp">2:50 PM</span>
+            </div>
+            <div class="message-content">
+                We use GitHub Actions with automated testing and deployment to staging/production. I can share our workflow file if needed.
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 8px;">
+        <h3>💡 Tips for Best Results</h3>
+        <ul>
+            <li>Select one message at a time for clearer text extraction</li>
+            <li>Ensure text is clearly visible and not too small</li>
+            <li>Good contrast (dark text on light background) works best</li>
+            <li>Standard fonts give better OCR results than decorative fonts</li>
+        </ul>
+    </div>
+</body>
+</html>
+

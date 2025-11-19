@@ -258,7 +258,13 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.search-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .search-submit-btn {
+  flex: 1;
   padding: 14px;
   background: #01bee7;
   color: white;
@@ -1196,4 +1202,69 @@ body {
 
 .main-content::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Screen Capture Button */
+.screen-capture-container {
+  position: relative;
+}
+
+.screen-capture-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #01bee7;
+  color: #01bee7;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.screen-capture-btn:hover:not(:disabled) {
+  background: #01bee7;
+  color: white;
+}
+
+.screen-capture-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.screen-capture-btn .spinner {
+  animation: spin 1s linear infinite;
+}
+
+.capture-error {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.capture-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.capture-progress-fill {
+  height: 100%;
+  background: #01bee7;
+  transition: width 0.3s ease;
 }
