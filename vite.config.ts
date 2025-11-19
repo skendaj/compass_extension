@@ -17,11 +17,19 @@ export default defineConfig({
           mkdirSync('dist/icons', { recursive: true });
         }
         
-        // Copy icon files if they exist
+        // Copy logo from public/assets as extension icons
+        if (existsSync('public/assets/logo192.png')) {
+          // Copy logo192.png and use it for all icon sizes (Chrome will scale)
+          copyFileSync('public/assets/logo192.png', 'dist/icons/icon16.png');
+          copyFileSync('public/assets/logo192.png', 'dist/icons/icon48.png');
+          copyFileSync('public/assets/logo192.png', 'dist/icons/icon128.png');
+        }
+        
+        // Copy other icon files if they exist (backup)
         if (existsSync('icons')) {
           const iconFiles = readdirSync('icons');
           iconFiles.forEach(file => {
-            if (file.endsWith('.png')) {
+            if (file.endsWith('.png') && !['icon16.png', 'icon48.png', 'icon128.png'].includes(file)) {
               copyFileSync(`icons/${file}`, `dist/icons/${file}`);
             }
           });
