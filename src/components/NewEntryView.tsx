@@ -9,6 +9,7 @@ interface NewEntryViewProps {
   initialData?: {
     title: string;
     content: string;
+    question?: string;
   };
 }
 
@@ -30,14 +31,20 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       setTitle(initialData.title);
       setSolution(initialData.content);
 
-      const lines = initialData.content.split("\n");
-      const overviewLine = lines.find(
-        (line) => line.includes("Overview") || line.includes("Summary"),
-      );
-      if (overviewLine) {
-        const idx = lines.indexOf(overviewLine);
-        if (idx + 1 < lines.length) {
-          setProblem(lines[idx + 1].trim());
+      // Use the question parameter if provided
+      if (initialData.question) {
+        setProblem(initialData.question);
+      } else {
+        // Fallback to extracting from content
+        const lines = initialData.content.split("\n");
+        const overviewLine = lines.find(
+          (line) => line.includes("Overview") || line.includes("Summary"),
+        );
+        if (overviewLine) {
+          const idx = lines.indexOf(overviewLine);
+          if (idx + 1 < lines.length) {
+            setProblem(lines[idx + 1].trim());
+          }
         }
       }
     }
@@ -136,6 +143,36 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       console.log("[NewEntryView] Saving entry to storage...", newEntry);
       await storageService.saveKnowledgeEntry(newEntry);
       console.log("[NewEntryView] Entry saved successfully");
+
+      // Also save to backend API
+      try {
+        const backendUrl = "http://localhost:5000/api/knowledge";
+        const response = await fetch(backendUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: JSON.stringify(newEntry),
+          }),
+        });
+
+        if (response.ok) {
+          console.log("[NewEntryView] Entry saved to backend successfully");
+        } else {
+          console.warn(
+            "[NewEntryView] Failed to save to backend:",
+            response.statusText,
+          );
+        }
+      } catch (backendErr) {
+        console.warn(
+          "[NewEntryView] Backend save failed (backend may be offline):",
+          backendErr,
+        );
+        // Don't fail the entire save if backend is unavailable
+      }
+
       console.log("[NewEntryView] Calling onSave callback...");
       onSave(newEntry);
       console.log("[NewEntryView] Save complete!");

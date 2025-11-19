@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ThumbsUp, ThumbsDown, ExternalLink, Download, Calendar, Clock, Eye, Mail, MessageSquare } from 'lucide-react';
-import { KnowledgeEntry } from '../types';
-import ShareButton from './ShareButton';
+import React, { useState } from "react";
+import {
+  ArrowLeft,
+  ThumbsUp,
+  ThumbsDown,
+  ExternalLink,
+  Download,
+  Calendar,
+  Clock,
+  Eye,
+  Mail,
+  MessageSquare,
+} from "lucide-react";
+import { KnowledgeEntry } from "../types";
+import ShareButton from "./ShareButton";
 
 interface KnowledgeDetailViewProps {
   entry: KnowledgeEntry;
@@ -9,7 +20,11 @@ interface KnowledgeDetailViewProps {
   onRate: (entryId: string, helpful: boolean) => void;
 }
 
-const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack, onRate }) => {
+const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({
+  entry,
+  onBack,
+  onRate,
+}) => {
   const [hasRated, setHasRated] = useState(false);
 
   const handleRate = (helpful: boolean) => {
@@ -20,10 +35,10 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -35,7 +50,10 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
   };
 
   const getTeamsUrl = (email: string, name: string) => {
-    const message = encodeURIComponent(`Hi ${name},`);
+    const question = entry.problem.trim().endsWith("?")
+      ? entry.problem
+      : `${entry.problem}?`;
+    const message = encodeURIComponent(`Hi ${name}, ${question}`);
     return `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}&message=${message}`;
   };
 
@@ -57,14 +75,18 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
       <div className="detail-content">
         <div className="detail-title-section">
           <div className="title-badges">
-            <span className={`category-badge ${entry.category}`}>{entry.category}</span>
-            <span className="difficulty-badge">{entry.metadata.difficulty}</span>
-            {entry.status === 'verified' && (
+            <span className={`category-badge ${entry.category}`}>
+              {entry.category}
+            </span>
+            <span className="difficulty-badge">
+              {entry.metadata.difficulty}
+            </span>
+            {entry.status === "verified" && (
               <span className="verified-badge">✓ Verified</span>
             )}
           </div>
           <h1 className="detail-title">{entry.title}</h1>
-          
+
           <div className="detail-metadata">
             <span className="metadata-item">
               <Calendar size={16} />
@@ -84,7 +106,7 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           <h2 className="section-heading">Solution</h2>
           <div className="section-content">
             <p className="solution-summary">{entry.solution.summary}</p>
-            
+
             {entry.solution.steps.length > 0 && (
               <div className="solution-steps">
                 <h3>Steps to resolve:</h3>
@@ -96,16 +118,17 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
               </div>
             )}
 
-            {entry.solution.codeSnippets && entry.solution.codeSnippets.length > 0 && (
-              <div className="code-snippets">
-                <h3>Code Examples:</h3>
-                {entry.solution.codeSnippets.map((snippet, index) => (
-                  <pre key={index} className="code-block">
-                    <code>{snippet}</code>
-                  </pre>
-                ))}
-              </div>
-            )}
+            {entry.solution.codeSnippets &&
+              entry.solution.codeSnippets.length > 0 && (
+                <div className="code-snippets">
+                  <h3>Code Examples:</h3>
+                  {entry.solution.codeSnippets.map((snippet, index) => (
+                    <pre key={index} className="code-block">
+                      <code>{snippet}</code>
+                    </pre>
+                  ))}
+                </div>
+              )}
           </div>
         </section>
 
@@ -115,23 +138,42 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
             <div className="contributors">
               {entry.solvedBy.length > 0 && (
                 <div className="contributor">
-                  <span className="contributor-avatar">{entry.solvedBy[0].avatar || '👤'}</span>
+                  <span className="contributor-avatar">
+                    {entry.solvedBy[0].avatar || "👤"}
+                  </span>
                   <div className="contributor-info">
-                    <div className="contributor-name">{entry.solvedBy[0].name}</div>
-                    <div className="contributor-role">{entry.solvedBy[0].role}</div>
+                    <div className="contributor-name">
+                      {entry.solvedBy[0].name}
+                    </div>
+                    <div className="contributor-role">
+                      {entry.solvedBy[0].role}
+                    </div>
                   </div>
                   <div className="contributor-actions">
-                    <button 
+                    <button
                       className="contact-btn teams-btn"
-                      onClick={() => window.open(getTeamsUrl(entry.solvedBy[0].email, entry.solvedBy[0].name), '_blank')}
+                      onClick={() =>
+                        window.open(
+                          getTeamsUrl(
+                            entry.solvedBy[0].email,
+                            entry.solvedBy[0].name,
+                          ),
+                          "_blank",
+                        )
+                      }
                       title={`Message ${entry.solvedBy[0].name} on Teams`}
                     >
                       <MessageSquare size={16} />
                       Teams
                     </button>
-                    <button 
+                    <button
                       className="contact-btn email-btn"
-                      onClick={() => window.open(getOutlookUrl(entry.solvedBy[0].email), '_blank')}
+                      onClick={() =>
+                        window.open(
+                          getOutlookUrl(entry.solvedBy[0].email),
+                          "_blank",
+                        )
+                      }
                       title={`Send email to ${entry.solvedBy[0].name}`}
                     >
                       <Mail size={16} />
@@ -144,7 +186,8 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           </div>
         </section>
 
-        {(entry.resources.links.length > 0 || entry.resources.files.length > 0) && (
+        {(entry.resources.links.length > 0 ||
+          entry.resources.files.length > 0) && (
           <section className="detail-section">
             <h2 className="section-heading">Resources</h2>
             <div className="section-content">
@@ -154,7 +197,12 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
                   <ul>
                     {entry.resources.links.map((link, index) => (
                       <li key={index}>
-                        <a href={link} target="_blank" rel="noopener noreferrer" className="resource-link">
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="resource-link"
+                        >
                           <ExternalLink size={14} />
                           {link}
                         </a>
@@ -163,14 +211,19 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
                   </ul>
                 </div>
               )}
-              
+
               {entry.resources.files.length > 0 && (
                 <div className="resources-list">
                   <h3>Files:</h3>
                   <ul>
                     {entry.resources.files.map((file, index) => (
                       <li key={index}>
-                        <a href={file.url} target="_blank" rel="noopener noreferrer" className="resource-link">
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="resource-link"
+                        >
                           <Download size={14} />
                           {file.name}
                         </a>
@@ -187,8 +240,10 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
           <h2 className="section-heading">Tags</h2>
           <div className="section-content">
             <div className="detail-tags">
-              {entry.tags.map(tag => (
-                <span key={tag} className="tag">{tag}</span>
+              {entry.tags.map((tag) => (
+                <span key={tag} className="tag">
+                  {tag}
+                </span>
               ))}
             </div>
           </div>
@@ -207,17 +262,17 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
                 {entry.metadata.notHelpfulCount} not helpful
               </span>
             </div>
-            
+
             {!hasRated ? (
               <div className="rating-actions">
-                <button 
+                <button
                   className="rating-btn helpful"
                   onClick={() => handleRate(true)}
                 >
                   <ThumbsUp size={18} />
                   Yes, this helped
                 </button>
-                <button 
+                <button
                   className="rating-btn not-helpful"
                   onClick={() => handleRate(false)}
                 >
@@ -238,4 +293,3 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
 };
 
 export default KnowledgeDetailView;
-

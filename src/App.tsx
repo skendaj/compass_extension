@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Search, History, BookMarked, Settings, LogOut } from "lucide-react";
+import {
+  Search,
+  History,
+  BookMarked,
+  Settings,
+  LogOut,
+  GitGraphIcon,
+} from "lucide-react";
 import KnowledgeGraph from "./components/KnowledgeGraph";
 import SearchView from "./components/SearchView";
 import ResultsView from "./components/ResultsView";
 import KnowledgeDetailView from "./components/KnowledgeDetailView";
+import NewEntryView from "./components/NewEntryView";
 import HistoryView from "./components/HistoryView";
 import SettingsView from "./components/SettingsView";
 import { LoginPage } from "./components/LoginPage";
@@ -14,8 +22,17 @@ import { qnaService } from "./services/qnaService";
 import { storageService } from "./services/storageService";
 import { initializeMockData, mockDocumentation } from "./services/mockData";
 import { DeepLinkService } from "./services/deepLinkService";
+import { CTAIconButton } from "./components/CTA";
+import { AvatarLetter } from "./components/AvatarLetter";
 
-type View = "search" | "results" | "detail" | "history" | "settings" | "graph";
+type View =
+  | "search"
+  | "results"
+  | "detail"
+  | "history"
+  | "settings"
+  | "graph"
+  | "new-entry";
 
 function App() {
   const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth();
@@ -28,6 +45,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notFoundMessage, setNotFoundMessage] = useState<string | null>(null);
+  const [newEntryInitialData, setNewEntryInitialData] = useState<
+    | {
+        title: string;
+        content: string;
+        question?: string;
+      }
+    | undefined
+  >(undefined);
 
   useEffect(() => {
     const init = async () => {
@@ -60,10 +85,29 @@ function App() {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get("action");
     const entryId = urlParams.get("entry");
     const searchQuery = urlParams.get("q");
 
-    if (entryId) {
+    if (action === "new-from-teams") {
+      const title = urlParams.get("title");
+      const content = urlParams.get("content");
+      const question = urlParams.get("question");
+
+      if (title && content) {
+        console.log("[App] Opening new entry from Teams:", {
+          title,
+          content,
+          question,
+        });
+        setNewEntryInitialData({
+          title,
+          content,
+          question: question || undefined,
+        });
+        setCurrentView("new-entry");
+      }
+    } else if (entryId) {
       const entry = await storageService.getKnowledgeEntryById(entryId);
       if (entry) {
         handleViewDetail(entry);
@@ -79,7 +123,7 @@ function App() {
     setIsLoading(true);
     setSearchQuery(query);
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     await storageService.saveSearchQuery(query);
 
@@ -96,34 +140,73 @@ function App() {
 
     if (qnaResp) {
       if ((qnaResp as any).found === true) {
-        const ke = qnaService.mapFoundToKnowledgeEntry(qnaResp as any, classification.category, query);
-        combined.push({ type: 'solution', relevanceScore: 1.0, data: ke });
+        const ke = qnaService.mapFoundToKnowledgeEntry(
+          qnaResp as any,
+          classification.category,
+          query,
+        );
+        combined.push({ type: "solution", relevanceScore: 1.0, data: ke });
         setNotFoundMessage(null);
       } else {
         const notFound = qnaResp as any;
-        setNotFoundMessage(notFound.message || "I don't have an exact answer, but here are some people who might help and related documentation:");
-        
+        setNotFoundMessage(
+          notFound.message ||
+            "I don't have an exact answer, but here are some people who might help and related documentation:",
+        );
+
         if (Array.isArray(notFound.suggestedContacts)) {
-          combined.push(...notFound.suggestedContacts.map((c: any) => ({ type: 'expert' as const, relevanceScore: 0.85, data: qnaService.mapSuggestedContactToUser(c) })));
+          combined.push(
+            ...notFound.suggestedContacts.map((c: any) => ({
+              type: "expert" as const,
+              relevanceScore: 0.85,
+              data: qnaService.mapSuggestedContactToUser(c),
+            })),
+          );
         }
         if (Array.isArray(notFound.relatedDocs)) {
-          combined.push(...notFound.relatedDocs.map((d: any) => ({ type: 'documentation' as const, relevanceScore: 0.8, data: qnaService.mapRelatedDocToDocumentationLink(d) })));
+          combined.push(
+            ...notFound.relatedDocs.map((d: any) => ({
+              type: "documentation" as const,
+              relevanceScore: 0.8,
+              data: qnaService.mapRelatedDocToDocumentationLink(d),
+            })),
+          );
         }
       }
     } else {
       setNotFoundMessage(null);
     }
 
-    combined.push(...knowledgeEntries.map((entry) => ({ type: 'solution' as const, relevanceScore: 0.9, data: entry })));
+    combined.push(
+      ...knowledgeEntries.map((entry) => ({
+        type: "solution" as const,
+        relevanceScore: 0.9,
+        data: entry,
+      })),
+    );
 
-    combined.push(...experts.map((expert) => ({ type: 'expert' as const, relevanceScore: 0.8, data: expert })));
-    combined.push(...mockDocumentation
-      .filter((doc) =>
-        doc.tags.some((tag) =>
-          technicalTerms.some((term) => tag.toLowerCase().includes(term.toLowerCase())),
-        ),
-      )
-      .map((doc) => ({ type: 'documentation' as const, relevanceScore: 0.7, data: doc })));
+    combined.push(
+      ...experts.map((expert) => ({
+        type: "expert" as const,
+        relevanceScore: 0.8,
+        data: expert,
+      })),
+    );
+    combined.push(
+      ...mockDocumentation
+        .filter((doc) =>
+          doc.tags.some((tag) =>
+            technicalTerms.some((term) =>
+              tag.toLowerCase().includes(term.toLowerCase()),
+            ),
+          ),
+        )
+        .map((doc) => ({
+          type: "documentation" as const,
+          relevanceScore: 0.7,
+          data: doc,
+        })),
+    );
 
     const results: SearchResult[] = combined;
 
@@ -160,6 +243,30 @@ function App() {
     if (updatedEntry) {
       setSelectedEntry(updatedEntry);
     }
+  };
+
+  const handleSaveNewEntry = async (entry: KnowledgeEntry) => {
+    console.log("[App] New entry saved:", entry);
+    setNewEntryInitialData(undefined);
+
+    // Show success and navigate to the detail view
+    setSelectedEntry(entry);
+    setCurrentView("detail");
+
+    // Optional: Also trigger a search to refresh results with the new entry
+    // This ensures the entry appears in search results immediately
+    if (searchQuery) {
+      // Refresh current search results to include new entry
+      setTimeout(() => {
+        handleSearch(searchQuery);
+      }, 100);
+    }
+  };
+
+  const handleCancelNewEntry = () => {
+    console.log("[App] New entry cancelled");
+    setNewEntryInitialData(undefined);
+    setCurrentView("search");
   };
 
   const handleLogout = async () => {
@@ -202,7 +309,7 @@ function App() {
               className={`nav-btn ${currentView === "graph" ? "active" : ""}`}
               onClick={() => setCurrentView("graph")}
             >
-              <BookMarked size={18} />
+              <GitGraphIcon size={18} />
               <span>Graph</span>
             </button>
             <button
@@ -222,15 +329,13 @@ function App() {
           </nav>
           {user && (
             <div className="user-info">
-              <span className="user-name">{user.name}</span>
-              <button
+              <AvatarLetter name={user.name} />
+              <CTAIconButton
                 onClick={handleLogout}
-                className="logout-btn"
                 title="Sign out"
                 disabled={isLoggingOut}
-              >
-                <LogOut size={16} />
-              </button>
+                icon={<LogOut size={16} />}
+              />
             </div>
           )}
         </div>
@@ -264,13 +369,15 @@ function App() {
         {currentView === "settings" && <SettingsView />}
 
         {currentView === "graph" && <KnowledgeGraph />}
-      </main>
 
-      <footer className="footer">
-        <p>
-          Tip: Ask questions naturally, like "How do I deploy to production?"
-        </p>
-      </footer>
+        {currentView === "new-entry" && (
+          <NewEntryView
+            onSave={handleSaveNewEntry}
+            onCancel={handleCancelNewEntry}
+            initialData={newEntryInitialData}
+          />
+        )}
+      </main>
     </div>
   );
 }
