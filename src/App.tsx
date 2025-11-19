@@ -10,6 +10,7 @@ import { LoginPage } from "./components/LoginPage";
 import { useAuth } from "./contexts/AuthContext";
 import { KnowledgeEntry, User, DocumentationLink, SearchResult } from "./types";
 import { aiClassifier } from "./services/aiClassifier";
+import { qnaService } from "./services/qnaService";
 import { storageService } from "./services/storageService";
 import { initializeMockData, mockDocumentation } from "./services/mockData";
 import { DeepLinkService } from "./services/deepLinkService";
@@ -90,6 +91,9 @@ function App() {
     // Classify the query
     const classification = aiClassifier.classify(query);
 
+    // Ask backend QnA service for a direct answer / suggested contacts / related docs
+    const qnaResp = await qnaService.ask(query);
+
     // Search knowledge base
     const knowledgeEntries = await storageService.searchKnowledgeEntries(query);
 
@@ -97,32 +101,40 @@ function App() {
     const technicalTerms = aiClassifier.extractTechnicalTerms(query);
     const experts = await storageService.searchExperts(technicalTerms);
 
-    // Combine results
-    const results: SearchResult[] = [
-      ...knowledgeEntries.map((entry) => ({
-        type: "solution" as const,
-        relevanceScore: 0.9,
-        data: entry,
-      })),
-      ...experts.map((expert) => ({
-        type: "expert" as const,
-        relevanceScore: 0.8,
-        data: expert,
-      })),
-      ...mockDocumentation
-        .filter((doc) =>
-          doc.tags.some((tag) =>
-            technicalTerms.some((term) =>
-              tag.toLowerCase().includes(term.toLowerCase()),
-            ),
-          ),
-        )
-        .map((doc) => ({
-          type: "documentation" as const,
-          relevanceScore: 0.7,
-          data: doc,
-        })),
-    ];
+    // Start building combined results, integrating QnA output when available
+    const combined: SearchResult[] = [];
+
+    if (qnaResp) {
+      if ((qnaResp as any).found === true) {
+        // Create a knowledge entry from the QnA found answer and add as a high-relevance solution
+        const ke = qnaService.mapFoundToKnowledgeEntry(qnaResp as any, classification.category, query);
+        combined.push({ type: 'solution', relevanceScore: 1.0, data: ke });
+      } else {
+        // Not found: add suggested contacts and related docs returned by backend
+        const notFound = qnaResp as any;
+        if (Array.isArray(notFound.suggestedContacts)) {
+          combined.push(...notFound.suggestedContacts.map((c: any) => ({ type: 'expert' as const, relevanceScore: 0.85, data: qnaService.mapSuggestedContactToUser(c) })));
+        }
+        if (Array.isArray(notFound.relatedDocs)) {
+          combined.push(...notFound.relatedDocs.map((d: any) => ({ type: 'documentation' as const, relevanceScore: 0.8, data: qnaService.mapRelatedDocToDocumentationLink(d) })));
+        }
+      }
+    }
+
+    // Add knowledge entries from local storage
+    combined.push(...knowledgeEntries.map((entry) => ({ type: 'solution' as const, relevanceScore: 0.9, data: entry })));
+
+    // Add local experts and documentation
+    combined.push(...experts.map((expert) => ({ type: 'expert' as const, relevanceScore: 0.8, data: expert })));
+    combined.push(...mockDocumentation
+      .filter((doc) =>
+        doc.tags.some((tag) =>
+          technicalTerms.some((term) => tag.toLowerCase().includes(term.toLowerCase())),
+        ),
+      )
+      .map((doc) => ({ type: 'documentation' as const, relevanceScore: 0.7, data: doc })));
+
+    const results: SearchResult[] = combined;
 
     setSearchResults(results);
 
