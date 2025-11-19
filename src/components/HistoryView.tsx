@@ -15,26 +15,42 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onSearch }) => {
 
   const loadHistory = async () => {
     const data = await storageService.getSearchHistory();
-    setHistory(data);
+    // Convert timestamp strings back to Date objects
+    const historyWithDates = data.map(item => ({
+      query: item.query,
+      timestamp: new Date(item.timestamp)
+    }));
+    setHistory(historyWithDates);
   };
 
   const formatDate = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - new Date(date).getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
+    try {
+      const now = new Date();
+      const timestamp = new Date(date);
+      
+      // Check if date is valid
+      if (Number.isNaN(timestamp.getTime())) {
+        return 'Unknown date';
+      }
+      
+      const diff = now.getTime() - timestamp.getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    
-    return new Date(date).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric' 
-    });
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      
+      return timestamp.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric' 
+      });
+    } catch (error) {
+      return 'Unknown date';
+    }
   };
 
   return (
