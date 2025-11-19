@@ -5,8 +5,8 @@ import ResultsView from "./components/ResultsView";
 import KnowledgeDetailView from "./components/KnowledgeDetailView";
 import HistoryView from "./components/HistoryView";
 import SettingsView from "./components/SettingsView";
-import { LoginPage } from './components/LoginPage';
-import { useAuth } from './contexts/AuthContext';
+import { LoginPage } from "./components/LoginPage";
+import { useAuth } from "./contexts/AuthContext";
 import { KnowledgeEntry, User, DocumentationLink, SearchResult } from "./types";
 import { aiClassifier } from "./services/aiClassifier";
 import { storageService } from "./services/storageService";
@@ -37,7 +37,7 @@ function App() {
       // Check for pending deep link
       checkDeepLink();
     };
-    
+
     // Only initialize if authenticated
     if (isAuthenticated) {
       init();
@@ -124,7 +124,16 @@ function App() {
     ];
 
     setSearchResults(results);
-    setCurrentView("results");
+
+    // If there's only one solution result, skip results view and go directly to detail
+    const solutionResults = results.filter((r) => r.type === "solution");
+    if (solutionResults.length === 1) {
+      const entry = solutionResults[0].data as KnowledgeEntry;
+      await handleViewDetail(entry);
+    } else {
+      setCurrentView("results");
+    }
+
     setIsLoading(false);
   };
 
@@ -183,12 +192,36 @@ function App() {
           <p className="subtitle">
             Find answers, experts, and solutions instantly
           </p>
+          {/* Navigation */}
+          <nav className="nav">
+            <button
+              className={`nav-btn ${currentView === "search" || currentView === "results" || currentView === "detail" ? "active" : ""}`}
+              onClick={() => setCurrentView("search")}
+            >
+              <Search size={18} />
+              <span>Search</span>
+            </button>
+            <button
+              className={`nav-btn ${currentView === "history" ? "active" : ""}`}
+              onClick={() => setCurrentView("history")}
+            >
+              <History size={18} />
+              <span>History</span>
+            </button>
+            <button
+              className={`nav-btn ${currentView === "settings" ? "active" : ""}`}
+              onClick={() => setCurrentView("settings")}
+            >
+              <Settings size={18} />
+              <span>Settings</span>
+            </button>
+          </nav>
           {user && (
             <div className="user-info">
               <span className="user-name">{user.name}</span>
-              <button 
-                onClick={handleLogout} 
-                className="logout-btn" 
+              <button
+                onClick={handleLogout}
+                className="logout-btn"
                 title="Sign out"
                 disabled={isLoggingOut}
               >
@@ -197,31 +230,6 @@ function App() {
             </div>
           )}
         </div>
-
-        {/* Navigation */}
-        <nav className="nav">
-          <button
-            className={`nav-btn ${currentView === "search" || currentView === "results" || currentView === "detail" ? "active" : ""}`}
-            onClick={() => setCurrentView("search")}
-          >
-            <Search size={18} />
-            <span>Search</span>
-          </button>
-          <button
-            className={`nav-btn ${currentView === "history" ? "active" : ""}`}
-            onClick={() => setCurrentView("history")}
-          >
-            <History size={18} />
-            <span>History</span>
-          </button>
-          <button
-            className={`nav-btn ${currentView === "settings" ? "active" : ""}`}
-            onClick={() => setCurrentView("settings")}
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </button>
-        </nav>
       </header>
 
       {/* Main Content */}

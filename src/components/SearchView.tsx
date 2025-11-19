@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState } from "react";
+import { Search } from "lucide-react";
 
 interface SearchViewProps {
   onSearch: (query: string) => void;
@@ -7,7 +7,7 @@ interface SearchViewProps {
 }
 
 const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,12 +17,12 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
   };
 
   const exampleQueries = [
-    'API returns 500 error in production',
-    'How to request parental leave',
-    'Database migration best practices',
-    'React component not re-rendering',
-    'How to setup CI/CD pipeline',
-    'Benefits enrollment deadline',
+    "API returns 500 error in production",
+    "How to request parental leave",
+    "Database migration best practices",
+    "React component not re-rendering",
+    "How to setup CI/CD pipeline",
+    "Benefits enrollment deadline",
   ];
 
   const handleExampleClick = (example: string) => {
@@ -34,9 +34,9 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
     <div className="search-view">
       <div className="search-hero">
         <div className="search-icon-wrapper">
-          <img 
-            src={chrome.runtime.getURL('assets/logo512.png')}
-            alt="Navify Logo" 
+          <img
+            src={chrome.runtime.getURL("assets/logo512.png")}
+            alt="Navify Logo"
             className="logo-icon"
           />
         </div>
@@ -44,7 +44,7 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         <p>Search for solutions, find experts, or explore our knowledge base</p>
       </div>
 
-      <div className="features-grid">
+      {/*<div className="features-grid">
         <div className="feature-card">
           <div className="feature-icon">Search</div>
           <h4>Smart Search</h4>
@@ -60,7 +60,7 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
           <h4>Knowledge Base</h4>
           <p>Access documented solutions from past conversations</p>
         </div>
-      </div>
+      </div>*/}
 
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-wrapper">
@@ -75,12 +75,12 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
             autoFocus
           />
         </div>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="search-submit-btn"
           disabled={isLoading || !query.trim()}
         >
-          {isLoading ? 'Searching...' : 'Search'}
+          {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
 
@@ -98,11 +98,8 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
           ))}
         </div>
       </div>
-
-    
     </div>
   );
 };
 
 export default SearchView;
-
