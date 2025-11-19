@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { Share2, Copy, Mail, Check, ExternalLink } from 'lucide-react';
-import { DeepLinkService } from '../services/deepLinkService';
+import React, { useState } from "react";
+import {
+  Share2,
+  Copy,
+  Mail,
+  Check,
+  ExternalLink,
+  FileText,
+} from "lucide-react";
+import { DeepLinkService } from "../services/deepLinkService";
+import { shareConfluenceService } from "../services/shareConfluence";
+import { storageService } from "../services/storageService";
 
 interface ShareButtonProps {
   entryId: string;
@@ -10,9 +19,14 @@ interface ShareButtonProps {
 const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
 
-  const shareLink = DeepLinkService.generateShareLink(entryId, 'external');
-  const socialLinks = DeepLinkService.getSocialShareLinks(shareLink, entryTitle);
+  const shareLink = DeepLinkService.generateShareLink(entryId, "external");
+  const socialLinks = DeepLinkService.getSocialShareLinks(
+    shareLink,
+    entryTitle,
+  );
 
   const handleCopyLink = async () => {
     const success = await DeepLinkService.copyToClipboard(shareLink);
@@ -28,8 +42,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const handleNativeShare = async () => {
     const shared = await DeepLinkService.shareNative(
       entryTitle,
-      'Check out this solution from our team knowledge base',
-      shareLink
+      "Check out this solution from our team knowledge base",
+      shareLink,
     );
     if (shared) {
       setShowMenu(false);
@@ -37,13 +51,59 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   };
 
   const handleShareToTeams = () => {
-    window.open(socialLinks.teams, '_blank');
+    window.open(socialLinks.teams, "_blank");
     setShowMenu(false);
   };
 
   const handleShareToEmail = () => {
     window.open(socialLinks.email);
     setShowMenu(false);
+  };
+
+  const handleShareToConfluence = async () => {
+    setIsSharing(true);
+    setShareStatus(null);
+
+    try {
+      // Check if Confluence is configured
+      const isConfigured = await shareConfluenceService.isConfigured();
+      if (!isConfigured) {
+        setShareStatus(
+          "Please configure Confluence first in extension settings",
+        );
+        setIsSharing(false);
+        return;
+      }
+
+      // Get the knowledge entry
+      const entry = await storageService.getKnowledgeEntryById(entryId);
+      if (!entry) {
+        setShareStatus("Entry not found");
+        setIsSharing(false);
+        return;
+      }
+
+      // Create the blog post
+      const response = await shareConfluenceService.createBlogPost(entry);
+      const webUrl = shareConfluenceService.getWebUrl(response);
+
+      setShareStatus("Successfully shared to Confluence!");
+
+      // Open the created blog post in a new tab
+      if (webUrl) {
+        window.open(webUrl, "_blank");
+      }
+
+      setTimeout(() => {
+        setShowMenu(false);
+        setIsSharing(false);
+        setShareStatus(null);
+      }, 2000);
+    } catch (error) {
+      console.error("Error sharing to Confluence:", error);
+      setShareStatus("Failed to share to Confluence");
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -59,7 +119,10 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
 
       {showMenu && (
         <>
-          <div className="share-menu-overlay" onClick={() => setShowMenu(false)} />
+          <div
+            className="share-menu-overlay"
+            onClick={() => setShowMenu(false)}
+          />
           <div className="share-menu">
             <div className="share-menu-header">
               <h4>Share this solution</h4>
@@ -91,8 +154,13 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
               </button>
 
               <button className="share-option" onClick={handleShareToTeams}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19.19 8.77q.39.47.39 1.13v5.76q0 .66-.39 1.13-.38.47-1 .47h-4.39v3.86q0 .66-.39 1.13-.38.47-1 .47H7.42q-.62 0-1-.47-.38-.47-.38-1.13V14.7H3.8q-.62 0-1-.47-.38-.47-.38-1.13V7.34q0-.66.38-1.13.38-.47 1-.47h3.24V1.88q0-.66.38-1.13.38-.47 1-.47h5q.62 0 1 .47.39.47.39 1.13v4.86h3.38q.62 0 1 .47z"/>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19.19 8.77q.39.47.39 1.13v5.76q0 .66-.39 1.13-.38.47-1 .47h-4.39v3.86q0 .66-.39 1.13-.38.47-1 .47H7.42q-.62 0-1-.47-.38-.47-.38-1.13V14.7H3.8q-.62 0-1-.47-.38-.47-.38-1.13V7.34q0-.66.38-1.13.38-.47 1-.47h3.24V1.88q0-.66.38-1.13.38-.47 1-.47h5q.62 0 1 .47.39.47.39 1.13v4.86h3.38q.62 0 1 .47z" />
                 </svg>
                 <span>Share to Teams</span>
               </button>
@@ -102,13 +170,39 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
                 <span>Share via Email</span>
               </button>
 
-              {navigator.share && (
+              <button
+                className="share-option"
+                onClick={handleShareToConfluence}
+                disabled={isSharing}
+              >
+                {isSharing ? (
+                  <>
+                    <div className="spinner" />
+                    <span>Sharing...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText size={18} />
+                    <span>Share to Confluence</span>
+                  </>
+                )}
+              </button>
+
+              {typeof navigator.share === "function" && (
                 <button className="share-option" onClick={handleNativeShare}>
                   <ExternalLink size={18} />
                   <span>More Options...</span>
                 </button>
               )}
             </div>
+
+            {shareStatus && (
+              <div
+                className={`share-status ${shareStatus.includes("Successfully") ? "success" : "error"}`}
+              >
+                {shareStatus}
+              </div>
+            )}
 
             <div className="share-menu-footer">
               <p className="share-help-text">
@@ -119,7 +213,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         </>
       )}
 
-      <style jsx>{`
+      <style>{`
         .share-button-container {
           position: relative;
         }
@@ -202,7 +296,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
           font-size: 12px;
           color: #6b7280;
           background: white;
-          font-family: 'Courier New', monospace;
+          font-family: "Courier New", monospace;
         }
 
         .share-link-input:focus {
@@ -249,10 +343,65 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
           color: #6b7280;
           text-align: center;
         }
+
+        .share-option:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .share-option:disabled:hover {
+          background: transparent;
+        }
+
+        .spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid #e5e7eb;
+          border-top-color: #667eea;
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .share-status {
+          padding: 12px 16px;
+          margin: 8px;
+          border-radius: 8px;
+          font-size: 13px;
+          text-align: center;
+          animation: slideIn 0.3s ease-out;
+        }
+
+        .share-status.success {
+          background: #d1fae5;
+          color: #065f46;
+          border: 1px solid #6ee7b7;
+        }
+
+        .share-status.error {
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fca5a5;
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
       `}</style>
     </div>
   );
 };
 
 export default ShareButton;
-
