@@ -7,8 +7,13 @@
     "storage",
     "activeTab",
     "tabs",
-    "contextMenus"
+    "contextMenus",
+    "identity"
   ],
+  "oauth2": {
+    "client_id": "navify-extension",
+    "scopes": ["openid", "profile", "email"]
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": {

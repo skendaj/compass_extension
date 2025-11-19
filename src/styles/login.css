@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Roboto', 'Cairo', sans-serif;
+}
+
+.login-content {
+  display: flex;
+  min-height: 100vh;
+}
+
+.login-left {
+  width: 40%;
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form-wrapper {
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  object-fit: contain;
+}
+
+.login-title {
+  font-family: 'Cairo', 'Roboto', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #002233;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.login-subtitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.login-form {
+  margin-bottom: 48px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 16px 24px;
+  background: #01BEE7;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.login-button:hover {
+  background: #00a8cf;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(1, 190, 231, 0.3);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-error {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fee;
+  color: #c00;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #fcc;
+}
+
+.login-help-text {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.login-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding-top: 32px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.login-footer a {
+  font-size: 13px;
+  color: #002233;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-footer a:hover {
+  color: #01BEE7;
+}
+
+.footer-separator {
+  color: #d1d5db;
+}
+
+.login-right {
+  width: 60%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #002233 0%, #004466 100%);
+  background-image: 
+    linear-gradient(135deg, rgba(1, 190, 231, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #002233 0%, #004466 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-right::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(1, 190, 231, 0.1) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+.advertising-content {
+  position: relative;
+  z-index: 1;
+  max-width: 500px;
+}
+
+.advertising-text {
+  color: #ffffff;
+}
+
+.advertising-text h2 {
+  font-family: 'Cairo', 'Roboto', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.advertising-text > p {
+  font-size: 20px;
+  color: #01BEE7;
+  margin: 0 0 40px 0;
+  font-weight: 500;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  padding-left: 32px;
+  position: relative;
+  line-height: 1.6;
+}
+
+.feature-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #01BEE7;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+@media (max-width: 991px) {
+  .login-content {
+    flex-direction: column;
+  }
+
+  .login-left {
+    width: 100%;
+    padding: 40px 24px;
+  }
+
+  .login-right {
+    display: none;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .login-left {
+    width: 45%;
+    padding: 40px;
+  }
+
+  .login-right {
+    width: 55%;
+    padding: 40px;
+  }
+}
+

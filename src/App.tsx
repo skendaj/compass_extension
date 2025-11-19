@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Search, History, BookMarked, Settings } from "lucide-react";
+import { Search, History, BookMarked, Settings, LogOut } from "lucide-react";
 import SearchView from "./components/SearchView";
 import ResultsView from "./components/ResultsView";
 import KnowledgeDetailView from "./components/KnowledgeDetailView";
 import HistoryView from "./components/HistoryView";
 import SettingsView from "./components/SettingsView";
+import { LoginPage } from './components/LoginPage';
+import { useAuth } from './contexts/AuthContext';
 import { KnowledgeEntry, User, DocumentationLink, SearchResult } from "./types";
 import { aiClassifier } from "./services/aiClassifier";
 import { storageService } from "./services/storageService";
@@ -14,6 +16,7 @@ import { DeepLinkService } from "./services/deepLinkService";
 type View = "search" | "results" | "detail" | "history" | "settings";
 
 function App() {
+  const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth();
   const [currentView, setCurrentView] = useState<View>("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -21,6 +24,7 @@ function App() {
     null,
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Initialize mock data on first load
   useEffect(() => {
@@ -33,8 +37,12 @@ function App() {
       // Check for pending deep link
       checkDeepLink();
     };
-    init();
-  }, []);
+    
+    // Only initialize if authenticated
+    if (isAuthenticated) {
+      init();
+    }
+  }, [isAuthenticated]);
 
   // Handle deep links
   const checkDeepLink = async () => {
@@ -143,6 +151,29 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+    setIsLoggingOut(false);
+  };
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="app-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage appName="TeamSystem Navify" />;
+  }
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -152,6 +183,19 @@ function App() {
           <p className="subtitle">
             Find answers, experts, and solutions instantly
           </p>
+          {user && (
+            <div className="user-info">
+              <span className="user-name">{user.name}</span>
+              <button 
+                onClick={handleLogout} 
+                className="logout-btn" 
+                title="Sign out"
+                disabled={isLoggingOut}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
