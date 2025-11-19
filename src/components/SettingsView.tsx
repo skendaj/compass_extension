@@ -14,6 +14,7 @@ const SettingsView: React.FC = () => {
   const [email, setEmail] = useState("");
   const [apiToken, setApiToken] = useState("");
   const [spaceId, setSpaceId] = useState("");
+  const [contentType, setContentType] = useState<"page" | "blogpost">("page");
   const [showApiToken, setShowApiToken] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -36,6 +37,7 @@ const SettingsView: React.FC = () => {
       setEmail(config.email);
       setApiToken(config.apiToken);
       setSpaceId(config.spaceId);
+      setContentType(config.contentType || "page");
     }
   };
 
@@ -56,6 +58,7 @@ const SettingsView: React.FC = () => {
         email,
         apiToken,
         spaceId,
+        contentType,
       });
 
       setSaveStatus("success");
@@ -86,6 +89,7 @@ const SettingsView: React.FC = () => {
         email,
         apiToken,
         spaceId,
+        contentType,
       });
 
       const isConnected = await shareConfluenceService.testConnection();
@@ -115,6 +119,7 @@ const SettingsView: React.FC = () => {
       setEmail("");
       setApiToken("");
       setSpaceId("");
+      setContentType("page");
       setSaveStatus(null);
       setTestStatus(null);
     }
@@ -225,6 +230,44 @@ const SettingsView: React.FC = () => {
             <small className="help-text">
               Enter your space key (e.g., "TEAM") or numeric space ID. The
               system will automatically convert space keys to IDs.
+            </small>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="contentType">
+              Content Type
+              <span className="required">*</span>
+            </label>
+            <div className="radio-group">
+              <label className="radio-label">
+                <input
+                  type="radio"
+                  name="contentType"
+                  value="page"
+                  checked={contentType === "page"}
+                  onChange={(e) => setContentType(e.target.value as "page")}
+                  className="radio-input"
+                />
+                <span className="radio-text">
+                  <strong>Page</strong> - Regular Confluence page
+                </span>
+              </label>
+              <label className="radio-label">
+                <input
+                  type="radio"
+                  name="contentType"
+                  value="blogpost"
+                  checked={contentType === "blogpost"}
+                  onChange={(e) => setContentType(e.target.value as "blogpost")}
+                  className="radio-input"
+                />
+                <span className="radio-text">
+                  <strong>Blog Post</strong> - Time-stamped blog entry
+                </span>
+              </label>
+            </div>
+            <small className="help-text">
+              Choose whether to create regular pages or blog posts when sharing
             </small>
           </div>
 
@@ -577,6 +620,54 @@ const SettingsView: React.FC = () => {
         }
 
         .instructions-list strong {
+          color: #1f2937;
+        }
+
+        .radio-group {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .radio-label {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .radio-label:hover {
+          border-color: #667eea;
+          background: #f9fafb;
+        }
+
+        .radio-input {
+          margin-top: 2px;
+          cursor: pointer;
+        }
+
+        .radio-input:checked + .radio-text {
+          color: #667eea;
+        }
+
+        .radio-label:has(.radio-input:checked) {
+          border-color: #667eea;
+          background: #ede9fe;
+        }
+
+        .radio-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 14px;
+          color: #374151;
+        }
+
+        .radio-text strong {
           color: #1f2937;
         }
       `}</style>
