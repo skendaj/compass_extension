@@ -21,6 +21,7 @@ interface ResultsViewProps {
   results: SearchResult[];
   onViewDetail: (entry: KnowledgeEntry) => void;
   onBack: () => void;
+  notFoundMessage?: string | null;
 }
 
 const ResultsView: React.FC<ResultsViewProps> = ({
@@ -28,6 +29,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({
   results,
   onViewDetail,
   onBack,
+  notFoundMessage,
 }) => {
   const solutions = results.filter((r) => r.type === "solution");
   const experts = results.filter((r) => r.type === "expert");
@@ -212,6 +214,13 @@ const ResultsView: React.FC<ResultsViewProps> = ({
           </p>
         </div>
       </div>
+
+      {notFoundMessage && (
+        <div className="not-found-message">
+          <div className="message-icon">💡</div>
+          <p>{notFoundMessage}</p>
+        </div>
+      )}
 
       {results.length === 0 ? (
         <div className="no-results">

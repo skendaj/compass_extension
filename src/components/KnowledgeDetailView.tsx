@@ -72,14 +72,14 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
               <Calendar size={16} />
               {formatDate(entry.metadata.createdAt)}
             </span>
-            <span className="metadata-item">
+            {/* <span className="metadata-item">
               <Clock size={16} />
               Resolved in {formatDuration(entry.metadata.resolutionTime)}
             </span>
             <span className="metadata-item">
               <Eye size={16} />
               {entry.metadata.views} views
-            </span>
+            </span> */}
           </div>
         </div>
 
@@ -123,61 +123,36 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({ entry, onBack
 
         {/* People Section */}
         <section className="detail-section">
-          <h2 className="section-heading">Contributors</h2>
+          <h2 className="section-heading">Contact</h2>
           <div className="section-content">
             <div className="contributors">
-              <div className="contributor">
-                <span className="contributor-avatar">{entry.askedBy.avatar || '👤'}</span>
-                <div className="contributor-info">
-                  <div className="contributor-name">{entry.askedBy.name}</div>
-                  <div className="contributor-role">Asked the question</div>
-                </div>
-                <div className="contributor-actions">
-                  <button 
-                    className="contact-btn teams-btn"
-                    onClick={() => window.open(getTeamsUrl(entry.askedBy.email, entry.askedBy.name), '_blank')}
-                    title={`Message ${entry.askedBy.name} on Teams`}
-                  >
-                    <MessageSquare size={16} />
-                    Teams
-                  </button>
-                  <button 
-                    className="contact-btn email-btn"
-                    onClick={() => window.open(getOutlookUrl(entry.askedBy.email), '_blank')}
-                    title={`Send email to ${entry.askedBy.name}`}
-                  >
-                    <Mail size={16} />
-                    Email
-                  </button>
-                </div>
-              </div>
-              {entry.solvedBy.map(solver => (
-                <div key={solver.id} className="contributor">
-                  <span className="contributor-avatar">{solver.avatar || '👤'}</span>
+              {entry.solvedBy.length > 0 && (
+                <div className="contributor">
+                  <span className="contributor-avatar">{entry.solvedBy[0].avatar || '👤'}</span>
                   <div className="contributor-info">
-                    <div className="contributor-name">{solver.name}</div>
-                    <div className="contributor-role">{solver.role}</div>
+                    <div className="contributor-name">{entry.solvedBy[0].name}</div>
+                    <div className="contributor-role">{entry.solvedBy[0].role}</div>
                   </div>
                   <div className="contributor-actions">
                     <button 
                       className="contact-btn teams-btn"
-                      onClick={() => window.open(getTeamsUrl(solver.email, solver.name), '_blank')}
-                      title={`Message ${solver.name} on Teams`}
+                      onClick={() => window.open(getTeamsUrl(entry.solvedBy[0].email, entry.solvedBy[0].name), '_blank')}
+                      title={`Message ${entry.solvedBy[0].name} on Teams`}
                     >
                       <MessageSquare size={16} />
                       Teams
                     </button>
                     <button 
                       className="contact-btn email-btn"
-                      onClick={() => window.open(getOutlookUrl(solver.email), '_blank')}
-                      title={`Send email to ${solver.name}`}
+                      onClick={() => window.open(getOutlookUrl(entry.solvedBy[0].email), '_blank')}
+                      title={`Send email to ${entry.solvedBy[0].name}`}
                     >
                       <Mail size={16} />
                       Email
                     </button>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </section>

@@ -27,6 +27,7 @@ function App() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [notFoundMessage, setNotFoundMessage] = useState<string | null>(null);
 
   // Initialize mock data on first load
   useEffect(() => {
@@ -85,6 +86,9 @@ function App() {
     setIsLoading(true);
     setSearchQuery(query);
 
+    // Simulate loading delay for better UX (1.5 seconds)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     // Save search to history
     await storageService.saveSearchQuery(query);
 
@@ -109,9 +113,13 @@ function App() {
         // Create a knowledge entry from the QnA found answer and add as a high-relevance solution
         const ke = qnaService.mapFoundToKnowledgeEntry(qnaResp as any, classification.category, query);
         combined.push({ type: 'solution', relevanceScore: 1.0, data: ke });
+        setNotFoundMessage(null); // Clear any previous message
       } else {
         // Not found: add suggested contacts and related docs returned by backend
         const notFound = qnaResp as any;
+        // Set the "not found" message
+        setNotFoundMessage(notFound.message || "I don't have an exact answer, but here are some people who might help and related documentation:");
+        
         if (Array.isArray(notFound.suggestedContacts)) {
           combined.push(...notFound.suggestedContacts.map((c: any) => ({ type: 'expert' as const, relevanceScore: 0.85, data: qnaService.mapSuggestedContactToUser(c) })));
         }
@@ -119,6 +127,8 @@ function App() {
           combined.push(...notFound.relatedDocs.map((d: any) => ({ type: 'documentation' as const, relevanceScore: 0.8, data: qnaService.mapRelatedDocToDocumentationLink(d) })));
         }
       }
+    } else {
+      setNotFoundMessage(null);
     }
 
     // Add knowledge entries from local storage
@@ -264,6 +274,7 @@ function App() {
             results={searchResults}
             onViewDetail={handleViewDetail}
             onBack={handleBack}
+            notFoundMessage={notFoundMessage}
           />
         )}
 

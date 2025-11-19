@@ -17,12 +17,12 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
   };
 
   const exampleQueries = [
-    "API returns 500 error in production",
-    "How to request parental leave",
-    "Database migration best practices",
-    "React component not re-rendering",
-    "How to setup CI/CD pipeline",
-    "Benefits enrollment deadline",
+    // "How to migrate a contrib project from Vapor 2 to Vapor 3",
+    "How to migrate a project to Vapor 3",
+    "How to create a new project with Vapor",
+    "How do I request medical leave?",
+    "Who manages performance reviews?",
+    "I cannot connect to Cisco VPN",
   ];
 
   const handleExampleClick = (example: string) => {
@@ -62,6 +62,21 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         </div>
       </div>*/}
 
+<div className="examples-section">
+        <h3>Popular searches:</h3>
+        <div className="examples-grid">
+          {exampleQueries.map((example, index) => (
+            <button
+              key={index}
+              className="example-chip"
+              onClick={() => handleExampleClick(example)}
+            >
+              {example}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-wrapper">
           <Search className="search-input-icon" size={20} />
@@ -84,20 +99,7 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         </button>
       </form>
 
-      <div className="examples-section">
-        <h3>Popular searches:</h3>
-        <div className="examples-grid">
-          {exampleQueries.map((example, index) => (
-            <button
-              key={index}
-              className="example-chip"
-              onClick={() => handleExampleClick(example)}
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
+    
     </div>
   );
 };
