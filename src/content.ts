@@ -11,40 +11,32 @@ function createFloatingWidget() {
   const widget = document.createElement('div');
   widget.id = 'team-knowledge-widget';
   widget.innerHTML = `
-    <div class="tkw-floating-button" id="tkw-button" title="Navify">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="14" fill="url(#gradient)" />
-        <path d="M16 8C13.79 8 12 9.79 12 12C12 14.21 13.79 16 16 16C18.21 16 20 14.21 20 12C20 9.79 18.21 8 16 8Z" fill="white"/>
-        <circle cx="16" cy="22" r="2" fill="white"/>
-        <defs>
-          <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-            <stop offset="0%" stop-color="#667eea" />
-            <stop offset="100%" stop-color="#764ba2" />
-          </linearGradient>
-        </defs>
+    <div class="tkw-floating-button" id="tkw-button" title="TeamSystem Navify">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#ffffff" viewBox="0 0 256 256">
+        <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216ZM128,48a8,8,0,0,1,8,8V72a8,8,0,0,1-16,0V56A8,8,0,0,1,128,48Zm0,160a8,8,0,0,1-8-8V184a8,8,0,0,1,16,0v16A8,8,0,0,1,128,208Zm80-80a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16h16A8,8,0,0,1,208,128ZM72,120H56a8,8,0,0,0,0,16H72a8,8,0,0,0,0-16Zm106.91-53.09a8,8,0,0,1,0,11.31l-11.31,11.32a8,8,0,0,1-11.32-11.32l11.32-11.31A8,8,0,0,1,178.91,66.91ZM88.6,167.4a8,8,0,0,1,0,11.31L77.09,190.22a8,8,0,1,1-11.31-11.31L77.29,167.4A8,8,0,0,1,88.6,167.4ZM190.22,178.91a8,8,0,0,1-11.31,0L167.4,167.4a8,8,0,0,1,11.31-11.31l11.51,11.51A8,8,0,0,1,190.22,178.91ZM77.09,65.78,88.6,77.29A8,8,0,0,0,99.91,65.98L88.4,54.47a8,8,0,0,0-11.31,11.31Z"/>
       </svg>
-      <div class="tkw-pulse"></div>
     </div>
   `;
 
   // Add styles
   const style = document.createElement('style');
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+
     #team-knowledge-widget {
       position: fixed;
       bottom: 24px;
       left: 24px;
       z-index: 999999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      font-family: 'Roboto', 'Cairo', sans-serif;
     }
 
     .tkw-floating-button {
       position: relative;
       width: 64px;
       height: 64px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      background: #01BEE7;
+      box-shadow: 0 2px 8px rgba(0, 34, 51, 0.2);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -53,16 +45,12 @@ function createFloatingWidget() {
     }
 
     .tkw-floating-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: #00a8cf;
+      box-shadow: 0 4px 12px rgba(0, 34, 51, 0.3);
     }
 
     .tkw-floating-button:active {
       transform: scale(0.98);
-    }
-
-    .tkw-pulse {
-      display: none;
     }
 
     /* Modal styles */
@@ -72,7 +60,7 @@ function createFloatingWidget() {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 34, 51, 0.7);
       backdrop-filter: blur(4px);
       z-index: 1000000;
       display: flex;
@@ -90,12 +78,11 @@ function createFloatingWidget() {
 
     .tkw-modal-content {
       background: white;
-      border-radius: 16px;
       width: 600px;
       max-width: 90vw;
       height: 700px;
       max-height: 90vh;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 34, 51, 0.4);
       overflow: hidden;
       transform: scale(0.9);
       animation: tkw-slideIn 0.3s forwards;
@@ -108,37 +95,41 @@ function createFloatingWidget() {
     }
 
     .tkw-modal-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #002233;
       color: white;
-      padding: 20px;
+      padding: 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 3px solid #01BEE7;
     }
 
     .tkw-modal-title {
-      font-size: 20px;
+      font-family: 'Cairo', 'Roboto', sans-serif;
+      font-size: 24px;
       font-weight: 700;
       margin: 0;
+      letter-spacing: 0.5px;
     }
 
     .tkw-modal-close {
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      color: white;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      background: transparent;
+      border: 2px solid #01BEE7;
+      color: #01BEE7;
+      width: 36px;
+      height: 36px;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 24px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
 
     .tkw-modal-close:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: #01BEE7;
+      color: #002233;
     }
 
     .tkw-modal-body {
@@ -168,7 +159,6 @@ function createFloatingWidget() {
         height: 100vh;
         max-width: 100vw;
         max-height: 100vh;
-        border-radius: 0;
       }
     }
   `;
@@ -199,7 +189,7 @@ function openModal(params?: string) {
   modal.innerHTML = `
     <div class="tkw-modal-content">
       <div class="tkw-modal-header">
-        <h2 class="tkw-modal-title">🎯 Navify</h2>
+        <h2 class="tkw-modal-title">TeamSystem Navify</h2>
         <button class="tkw-modal-close" id="tkw-close-modal">×</button>
       </div>
       <div class="tkw-modal-body">

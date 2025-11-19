@@ -1,4 +1,4 @@
-// Data Models for Navify
+// Data Models for TeamSystem Navify
 
 export interface User {
   id: string;

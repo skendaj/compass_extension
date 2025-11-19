@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, cpSync } from 'fs';
 
 export default defineConfig({
   plugins: [
@@ -25,6 +25,19 @@ export default defineConfig({
               copyFileSync(`icons/${file}`, `dist/icons/${file}`);
             }
           });
+        }
+        
+        // Copy public assets
+        if (existsSync('public')) {
+          if (!existsSync('dist/assets')) {
+            mkdirSync('dist/assets', { recursive: true });
+          }
+          if (existsSync('public/assets')) {
+            const assetFiles = readdirSync('public/assets');
+            assetFiles.forEach(file => {
+              copyFileSync(`public/assets/${file}`, `dist/assets/${file}`);
+            });
+          }
         }
       },
     },

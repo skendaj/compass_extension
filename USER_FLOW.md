@@ -1,7 +1,7 @@
 # User Flow Documentation
 
 ## Overview
-This document details all user flows for the Navify Chrome extension.
+This document details all user flows for the TeamSystem Navify Chrome extension.
 
 ---
 

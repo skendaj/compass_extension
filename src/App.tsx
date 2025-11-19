@@ -145,7 +145,7 @@ function App() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <h1 className="title">🎯 Navify</h1>
+          <h1 className="title">🎯 TeamSystem Navify</h1>
           <p className="subtitle">Find answers, experts, and solutions instantly</p>
         </div>
         
@@ -198,7 +198,7 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <p>💡 Tip: Ask questions naturally, like "How do I deploy to production?"</p>
+        <p>Tip: Ask questions naturally, like "How do I deploy to production?"</p>
       </footer>
     </div>
   );

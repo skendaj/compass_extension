@@ -1,4 +1,4 @@
-# Navify - Feature Specification
+# TeamSystem Navify - Feature Specification
 
 ## Executive Summary
 An intelligent Chrome extension that acts as an internal StackOverflow-style assistant, routing users to the right people and information while building an organizational knowledge base.

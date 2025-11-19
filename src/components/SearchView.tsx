@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Sparkles } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface SearchViewProps {
   onSearch: (query: string) => void;
@@ -34,7 +34,11 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
     <div className="search-view">
       <div className="search-hero">
         <div className="search-icon-wrapper">
-          <Sparkles size={48} className="sparkle-icon" />
+          <img 
+            src={chrome.runtime.getURL('assets/logo512.png')}
+            alt="Navify Logo" 
+            className="logo-icon"
+          />
         </div>
         <h2>What can we help you with today?</h2>
         <p>Search for solutions, find experts, or explore our knowledge base</p>
@@ -79,17 +83,17 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
 
       <div className="features-grid">
         <div className="feature-card">
-          <span className="feature-icon">🔍</span>
+          <div className="feature-icon">Search</div>
           <h4>Smart Search</h4>
           <p>AI-powered search understands your intent and finds relevant solutions</p>
         </div>
         <div className="feature-card">
-          <span className="feature-icon">👥</span>
+          <div className="feature-icon">Experts</div>
           <h4>Find Experts</h4>
           <p>Connect with team members who have solved similar problems</p>
         </div>
         <div className="feature-card">
-          <span className="feature-icon">📚</span>
+          <div className="feature-icon">Knowledge</div>
           <h4>Knowledge Base</h4>
           <p>Access documented solutions from past conversations</p>
         </div>

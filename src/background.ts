@@ -2,7 +2,7 @@
 
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('Navify installed!');
+  console.log('TeamSystem Navify installed!');
   
   // Initialize storage with default values
   chrome.storage.local.set({

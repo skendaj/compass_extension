@@ -1,9 +1,9 @@
-# Demo Guide - Navify
+# Demo Guide - TeamSystem Navify
 
 This guide will walk you through a complete demonstration of the extension's features.
 
 ## Overview
-The Navify is a Chrome extension that helps teams find information, connect with experts, and build organizational knowledge.
+The TeamSystem Navify is a Chrome extension that helps teams find information, connect with experts, and build organizational knowledge.
 
 ---
 
@@ -11,7 +11,7 @@ The Navify is a Chrome extension that helps teams find information, connect with
 
 ### Part 1: Introduction & Search Interface (2 minutes)
 
-**SAY:** "Let me show you our Navify - an internal StackOverflow for your organization."
+**SAY:** "Let me show you our TeamSystem Navify - an internal StackOverflow for your organization."
 
 **DO:**
 1. Click the extension icon in Chrome toolbar

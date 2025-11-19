@@ -198,5 +198,5 @@ If you encounter issues:
 3. Rebuild the extension
 4. Check that all dependencies installed correctly
 
-Enjoy your Navify! 🎯
+Enjoy your TeamSystem Navify! 🎯
 

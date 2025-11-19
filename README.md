@@ -1,4 +1,4 @@
-# Navify - Chrome Extension
+# TeamSystem Navify - Chrome Extension
 
 An intelligent Chrome extension that acts as an internal StackOverflow-style assistant for enterprise team productivity. It routes users to the right people and information while building an organizational knowledge base.
 

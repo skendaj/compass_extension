@@ -1,4 +1,4 @@
-# Navify - Complete Project Index
+# TeamSystem Navify - Complete Project Index
 
 ## 📚 Documentation Map
 
