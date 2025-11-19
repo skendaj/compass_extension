@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Share2,
-  Copy,
-  Mail,
-  Check,
-  ExternalLink,
-  FileText,
-} from "lucide-react";
+import { Share2, Copy, Mail, Check, FileText } from "lucide-react";
 import { DeepLinkService } from "../services/deepLinkService";
 import { shareConfluenceService } from "../services/shareConfluence";
 import { storageService } from "../services/storageService";
@@ -26,6 +19,12 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const [isShared, setIsShared] = useState(false);
 
   useEffect(() => {
+    // Reset state when entryId changes
+    setConfluenceUrl(null);
+    setIsShared(false);
+    setCopied(false);
+    setShareStatus(null);
+
     // Load content type from config and check if entry is already shared
     const loadData = async () => {
       const config = await shareConfluenceService.loadConfig();
@@ -50,24 +49,53 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   );
 
   const handleCopyLink = async () => {
-    const linkToCopy = confluenceUrl || shareLink;
-    const success = await DeepLinkService.copyToClipboard(linkToCopy);
+    console.log("Copy button clicked");
+
+    if (!confluenceUrl) {
+      console.error("No Confluence URL available to copy");
+      return;
+    }
+
+    console.log("Copying URL:", confluenceUrl);
+    const success = await DeepLinkService.copyToClipboard(confluenceUrl);
+    console.log("Copy success:", success);
+
     if (success) {
       setCopied(true);
       setTimeout(() => {
         setCopied(false);
-        setShowMenu(false);
+      }, 2000);
+    } else {
+      setShareStatus("Failed to copy link");
+      setTimeout(() => {
+        setShareStatus(null);
       }, 2000);
     }
   };
 
   const handleShareToTeams = () => {
-    window.open(socialLinks.teams, "_blank");
+    if (confluenceUrl) {
+      const shareLinks = DeepLinkService.getSocialShareLinks(
+        confluenceUrl,
+        entryTitle,
+      );
+      window.open(shareLinks.teams, "_blank");
+    } else {
+      window.open(socialLinks.teams, "_blank");
+    }
     setShowMenu(false);
   };
 
   const handleShareToEmail = () => {
-    window.open(socialLinks.email);
+    if (confluenceUrl) {
+      const shareLinks = DeepLinkService.getSocialShareLinks(
+        confluenceUrl,
+        entryTitle,
+      );
+      window.open(shareLinks.email);
+    } else {
+      window.open(socialLinks.email);
+    }
     setShowMenu(false);
   };
 
@@ -113,6 +141,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
             confluenceUrl: webUrl,
           },
         });
+
+        // Update state immediately
         setConfluenceUrl(webUrl);
         setIsShared(true);
       }
@@ -362,6 +392,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
           align-items: center;
           justify-content: center;
           transition: all 0.2s;
+          z-index: 10;
         }
 
         .copy-link-button:hover {
