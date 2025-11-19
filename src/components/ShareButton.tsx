@@ -22,17 +22,26 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [contentType, setContentType] = useState<"page" | "blogpost">("page");
+  const [confluenceUrl, setConfluenceUrl] = useState<string | null>(null);
+  const [isShared, setIsShared] = useState(false);
 
   useEffect(() => {
-    // Load content type from config
-    const loadContentType = async () => {
+    // Load content type from config and check if entry is already shared
+    const loadData = async () => {
       const config = await shareConfluenceService.loadConfig();
       if (config) {
         setContentType(config.contentType || "page");
       }
+
+      // Check if entry has Confluence URL
+      const entry = await storageService.getKnowledgeEntryById(entryId);
+      if (entry?.metadata.confluenceUrl) {
+        setConfluenceUrl(entry.metadata.confluenceUrl);
+        setIsShared(true);
+      }
     };
-    loadContentType();
-  }, []);
+    loadData();
+  }, [entryId]);
 
   const shareLink = DeepLinkService.generateShareLink(entryId, "external");
   const socialLinks = DeepLinkService.getSocialShareLinks(
@@ -41,24 +50,14 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   );
 
   const handleCopyLink = async () => {
-    const success = await DeepLinkService.copyToClipboard(shareLink);
+    const linkToCopy = confluenceUrl || shareLink;
+    const success = await DeepLinkService.copyToClipboard(linkToCopy);
     if (success) {
       setCopied(true);
       setTimeout(() => {
         setCopied(false);
         setShowMenu(false);
       }, 2000);
-    }
-  };
-
-  const handleNativeShare = async () => {
-    const shared = await DeepLinkService.shareNative(
-      entryTitle,
-      "Check out this solution from our team knowledge base",
-      shareLink,
-    );
-    if (shared) {
-      setShowMenu(false);
     }
   };
 
@@ -73,8 +72,23 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
   };
 
   const handleShareToConfluence = async () => {
+    // If already shared, just open the Confluence page
+    if (isShared && confluenceUrl) {
+      window.open(confluenceUrl, "_blank");
+      return;
+    }
+
+    // Otherwise, share it
     setIsSharing(true);
     setShareStatus(null);
+
+    // Get the knowledge entry
+    const entry = await storageService.getKnowledgeEntryById(entryId);
+    if (!entry) {
+      setShareStatus("Entry not found");
+      setIsSharing(false);
+      return;
+    }
 
     try {
       // Check if Confluence is configured
@@ -87,24 +101,22 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         return;
       }
 
-      // Reload content type in case it changed
-      const config = await shareConfluenceService.loadConfig();
-      const currentContentType = config?.contentType || "page";
-
-      // Get the knowledge entry
-      const entry = await storageService.getKnowledgeEntryById(entryId);
-      if (!entry) {
-        setShareStatus("Entry not found");
-        setIsSharing(false);
-        return;
-      }
-
       // Create the page or blog post
       const response = await shareConfluenceService.createBlogPost(entry);
       const webUrl = shareConfluenceService.getWebUrl(response);
 
-      const contentName =
-        currentContentType === "blogpost" ? "Blog Post" : "Page";
+      // Save the Confluence URL to the entry
+      if (webUrl) {
+        await storageService.updateKnowledgeEntry(entryId, {
+          metadata: {
+            ...entry.metadata,
+            confluenceUrl: webUrl,
+          },
+        });
+        setConfluenceUrl(webUrl);
+        setIsShared(true);
+      }
+
       setShareStatus(`Successfully shared to Confluence!`);
 
       // Open the created blog post in a new tab
@@ -147,47 +159,52 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
               <h4>Share this solution</h4>
             </div>
 
-            <div className="share-link-preview">
-              <input
-                type="text"
-                value={shareLink}
-                readOnly
-                className="share-link-input"
-                onClick={(e) => (e.target as HTMLInputElement).select()}
-              />
-            </div>
+            {confluenceUrl && (
+              <div className="share-link-preview">
+                <div className="share-link-input-wrapper">
+                  <input
+                    type="text"
+                    value={confluenceUrl}
+                    readOnly
+                    className="share-link-input"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <button
+                    className="copy-link-button"
+                    onClick={handleCopyLink}
+                    title="Copy link"
+                  >
+                    {copied ? (
+                      <Check size={16} className="copy-icon-success" />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="share-options">
-              <button className="share-option" onClick={handleCopyLink}>
-                {copied ? (
-                  <>
-                    <Check size={18} className="share-icon-success" />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={18} />
-                    <span>Copy Link</span>
-                  </>
-                )}
-              </button>
+              {confluenceUrl && (
+                <button className="share-option" onClick={handleShareToTeams}>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19.19 8.77q.39.47.39 1.13v5.76q0 .66-.39 1.13-.38.47-1 .47h-4.39v3.86q0 .66-.39 1.13-.38.47-1 .47H7.42q-.62 0-1-.47-.38-.47-.38-1.13V14.7H3.8q-.62 0-1-.47-.38-.47-.38-1.13V7.34q0-.66.38-1.13.38-.47 1-.47h3.24V1.88q0-.66.38-1.13.38-.47 1-.47h5q.62 0 1 .47.39.47.39 1.13v4.86h3.38q.62 0 1 .47z" />
+                  </svg>
+                  <span>Share to Teams</span>
+                </button>
+              )}
 
-              <button className="share-option" onClick={handleShareToTeams}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19.19 8.77q.39.47.39 1.13v5.76q0 .66-.39 1.13-.38.47-1 .47h-4.39v3.86q0 .66-.39 1.13-.38.47-1 .47H7.42q-.62 0-1-.47-.38-.47-.38-1.13V14.7H3.8q-.62 0-1-.47-.38-.47-.38-1.13V7.34q0-.66.38-1.13.38-.47 1-.47h3.24V1.88q0-.66.38-1.13.38-.47 1-.47h5q.62 0 1 .47.39.47.39 1.13v4.86h3.38q.62 0 1 .47z" />
-                </svg>
-                <span>Share to Teams</span>
-              </button>
-
-              <button className="share-option" onClick={handleShareToEmail}>
-                <Mail size={18} />
-                <span>Share via Email</span>
-              </button>
+              {confluenceUrl && (
+                <button className="share-option" onClick={handleShareToEmail}>
+                  <Mail size={18} />
+                  <span>Share via Email</span>
+                </button>
+              )}
 
               <button
                 className="share-option"
@@ -199,6 +216,11 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
                     <div className="spinner" />
                     <span>Sharing...</span>
                   </>
+                ) : isShared ? (
+                  <>
+                    <FileText size={18} />
+                    <span>View on Confluence</span>
+                  </>
                 ) : (
                   <>
                     <FileText size={18} />
@@ -209,16 +231,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
                   </>
                 )}
               </button>
-
-              {typeof navigator.share === "function" && (
-                <button className="share-option" onClick={handleNativeShare}>
-                  <ExternalLink size={18} />
-                  <span>More Options...</span>
-                </button>
-              )}
             </div>
 
-            {shareStatus && (
+            {shareStatus && shareStatus !== "shared" && (
               <div
                 className={`share-status ${shareStatus.includes("Successfully") ? "success" : "error"}`}
               >
@@ -228,7 +243,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
 
             <div className="share-menu-footer">
               <p className="share-help-text">
-                Anyone with this link can view this solution
+                {confluenceUrl
+                  ? "Share the Confluence link with your team"
+                  : "Share to Confluence first to get a shareable link"}
               </p>
             </div>
           </div>
@@ -310,9 +327,15 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
           background: #f9fafb;
         }
 
+        .share-link-input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
         .share-link-input {
           width: 100%;
-          padding: 8px 12px;
+          padding: 8px 40px 8px 12px;
           border: 1px solid #e5e7eb;
           border-radius: 6px;
           font-size: 12px;
@@ -324,6 +347,30 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         .share-link-input:focus {
           outline: none;
           border-color: #667eea;
+        }
+
+        .copy-link-button {
+          position: absolute;
+          right: 8px;
+          background: transparent;
+          border: none;
+          color: #6b7280;
+          cursor: pointer;
+          padding: 6px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+
+        .copy-link-button:hover {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        .copy-icon-success {
+          color: #16a34a;
         }
 
         .share-options {
