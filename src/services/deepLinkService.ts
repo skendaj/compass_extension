@@ -1,5 +1,5 @@
 export class DeepLinkService {
-  private static readonly BASE_URL = "https://knowledge.company.com"; // Replace with your domain
+  private static readonly BASE_URL = "https://confluence.company.com"; // Replace with your Confluence domain
   private static readonly EXTENSION_PROTOCOL = "teamknowledge://";
 
   static generateShareLink(

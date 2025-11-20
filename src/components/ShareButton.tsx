@@ -30,31 +30,58 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
         setContentType(config.contentType || "page");
       }
 
+      // Check if entry has a valid Confluence URL
       if (entry?.metadata.confluenceUrl) {
-        setConfluenceUrl(entry.metadata.confluenceUrl);
-        setIsShared(true);
+        const url = entry.metadata.confluenceUrl;
+        // Validate it's a real Confluence URL (contains /wiki/ or atlassian.net)
+        if (url.includes("/wiki/") || url.includes("atlassian.net")) {
+          console.log(
+            "[ShareButton] Found valid Confluence URL:",
+            entry.metadata.confluenceUrl,
+          );
+          setConfluenceUrl(entry.metadata.confluenceUrl);
+          setIsShared(true);
+        } else {
+          console.log(
+            "[ShareButton] Invalid Confluence URL found, clearing it:",
+            url,
+          );
+          // Clear invalid URL from storage
+          try {
+            await storageService.updateKnowledgeEntry(entry.id, {
+              metadata: {
+                ...entry.metadata,
+                confluenceUrl: undefined,
+              },
+            });
+            console.log("[ShareButton] Invalid URL cleared from storage");
+          } catch (err) {
+            console.log(
+              "[ShareButton] Could not clear invalid URL from storage",
+            );
+          }
+          // Invalid URL - allow user to share to Confluence
+          setConfluenceUrl(null);
+          setIsShared(false);
+        }
+      } else {
+        console.log(
+          "[ShareButton] No existing Confluence URL for entry:",
+          entry.id,
+        );
       }
     };
     loadData();
   }, [entry.id]);
 
-  const shareLink = DeepLinkService.generateShareLink(entry.id, "external");
-  const socialLinks = DeepLinkService.getSocialShareLinks(
-    shareLink,
-    entry.title,
-  );
-
   const handleCopyLink = async () => {
-    console.log("Copy button clicked");
-
     if (!confluenceUrl) {
-      console.error("No Confluence URL available to copy");
+      setShareStatus("Please share to Confluence first");
+      setTimeout(() => setShareStatus(null), 2000);
       return;
     }
 
-    console.log("Copying URL:", confluenceUrl);
     const success = await DeepLinkService.copyToClipboard(confluenceUrl);
-    console.log("Copy success:", success);
 
     if (success) {
       setCopied(true);
@@ -76,8 +103,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
         entry.title,
       );
       window.open(shareLinks.teams, "_blank");
-    } else {
-      window.open(socialLinks.teams, "_blank");
     }
     setShowMenu(false);
   };
@@ -89,8 +114,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
         entry.title,
       );
       window.open(shareLinks.email);
-    } else {
-      window.open(socialLinks.email);
     }
     setShowMenu(false);
   };
@@ -115,7 +138,11 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
       }
 
       const response = await shareConfluenceService.createBlogPost(entry);
-      const webUrl = shareConfluenceService.getWebUrl(response);
+      const config = await shareConfluenceService.loadConfig();
+      const webUrl = shareConfluenceService.getWebUrl(
+        response,
+        config || undefined,
+      );
 
       if (webUrl) {
         // Try to update storage if entry has been saved
@@ -143,7 +170,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
       }
 
       setTimeout(() => {
-        setShowMenu(false);
         setIsSharing(false);
         setShareStatus(null);
       }, 2000);
