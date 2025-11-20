@@ -37,6 +37,7 @@ type View =
 function App() {
   const { isAuthenticated, isLoading: authLoading, logout, user } = useAuth();
   const [currentView, setCurrentView] = useState<View>("search");
+  const [previousView, setPreviousView] = useState<View>("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(
@@ -226,12 +227,20 @@ function App() {
   const handleViewDetail = async (entry: KnowledgeEntry) => {
     setSelectedEntry(entry);
     await storageService.incrementViews(entry.id);
+    setPreviousView(currentView);
     setCurrentView("detail");
   };
 
   const handleBack = () => {
     if (currentView === "detail") {
-      setCurrentView("results");
+      // If we came from new-entry, go back to search
+      if (previousView === "new-entry") {
+        setCurrentView("search");
+      } else if (searchResults.length > 0) {
+        setCurrentView("results");
+      } else {
+        setCurrentView("search");
+      }
     } else if (currentView === "results" || currentView === "history") {
       setCurrentView("search");
     }
@@ -251,6 +260,7 @@ function App() {
 
     // Show success and navigate to the detail view
     setSelectedEntry(entry);
+    setPreviousView("new-entry");
     setCurrentView("detail");
 
     // Optional: Also trigger a search to refresh results with the new entry

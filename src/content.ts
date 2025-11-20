@@ -634,6 +634,116 @@ function createTeamsCaptureButton() {
       background: #f8f9fa;
       border-color: #7E85FD;
     }
+
+    .tkw-qa-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .tkw-qa-pair {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .tkw-question {
+      background: #f0f9ff;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .tkw-answer {
+      background: #f8fffe;
+      padding: 12px 16px;
+    }
+
+    .tkw-message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .tkw-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tkw-badge-question {
+      background: #7E85FD;
+      color: white;
+    }
+
+    .tkw-badge-answer {
+      background: #01BEE7;
+      color: white;
+    }
+
+    .tkw-sender {
+      font-size: 13px;
+      font-weight: 600;
+      color: #002233;
+    }
+
+    .tkw-timestamp {
+      font-size: 11px;
+      color: #666;
+      margin-left: auto;
+    }
+
+    .tkw-message-content {
+      color: #333;
+      line-height: 1.6;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .tkw-messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .tkw-message-item {
+      padding: 16px;
+      background: #f8fffe;
+      border-left: 4px solid #01BEE7;
+      border-radius: 6px;
+    }
+
+    .tkw-question-highlight {
+      background: #f0f4ff;
+      border-left: 4px solid #7E85FD;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .tkw-question-highlight h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 16px;
+      color: #002233;
+    }
+
+    .tkw-question-highlight p {
+      margin: 0;
+      color: #002233;
+      font-size: 15px;
+      line-height: 1.6;
+    }
   `;
 
   document.head.appendChild(style);
@@ -696,7 +806,14 @@ function showTeamsChatModal(chatData: any) {
     existingModal.remove();
   }
 
-  const { summary, formattedText, keySummary, context } = chatData;
+  const { summary, keySummary, context, qaPairs } = chatData;
+
+  // Log API payload to console
+  console.log("[Teams Capture] API Payload:", qaPairs.apiPayload);
+  console.log(
+    "[Teams Capture] API Payload JSON:",
+    JSON.stringify(qaPairs.apiPayload, null, 2),
+  );
 
   const modal = document.createElement("div");
   modal.id = "tkw-teams-chat-modal";
@@ -709,20 +826,23 @@ function showTeamsChatModal(chatData: any) {
   modal.innerHTML = `
     <div class="tkw-teams-modal-content">
       <div class="tkw-teams-modal-header">
-        <h2 class="tkw-teams-modal-title">📥 Captured Teams Chat</h2>
+        <h2 class="tkw-teams-modal-title">Captured Teams Chat</h2>
         <button class="tkw-teams-modal-close" id="tkw-close-teams-modal">×</button>
       </div>
       <div class="tkw-teams-modal-body">
         <div class="tkw-teams-summary">
+          ${
+            qaPairs.question
+              ? `
+            <div class="tkw-question-highlight">
+              <h3>Question</h3>
+              <p><strong>${qaPairs.question}</strong></p>
+            </div>
+          `
+              : ""
+          }
+
           <div class="tkw-teams-info">
-            <div class="tkw-teams-info-item">
-              <span class="tkw-teams-info-label">Chat Name</span>
-              <span class="tkw-teams-info-value">${chatTitle}</span>
-            </div>
-            <div class="tkw-teams-info-item">
-              <span class="tkw-teams-info-label">Participants</span>
-              <span class="tkw-teams-info-value">${summary.participants.join(", ")}</span>
-            </div>
             <div class="tkw-teams-info-item">
               <span class="tkw-teams-info-label">Messages</span>
               <span class="tkw-teams-info-value">${summary.messageCount}</span>
@@ -734,54 +854,46 @@ function showTeamsChatModal(chatData: any) {
           </div>
 
           ${
-            keySummary.extractedQuestion
+            qaPairs.pairs.length > 0
               ? `
-            <h3>❓ Question</h3>
-            <p><strong>${keySummary.extractedQuestion}</strong></p>
+            <h3>Answer</h3>
+            <div class="tkw-messages-list">
+              ${qaPairs.pairs
+                .map(
+                  (pair: any) => `
+                  <div class="tkw-message-item">
+                    <div class="tkw-message-header">
+                      <span class="tkw-timestamp">${new Date().toLocaleString()}</span>
+                    </div>
+                    <div class="tkw-message-content">${pair.answer}</div>
+                  </div>
+              `,
+                )
+                .join("")}
+            </div>
           `
-              : ""
-          }
-
-          <h3>📝 Overview</h3>
-          <p>${keySummary.overview}</p>
-
-          ${
-            keySummary.keyPoints.length > 0
-              ? `
-            <h3>🔑 Key Points</h3>
-            <ul>
-              ${keySummary.keyPoints.map((point: string) => `<li>${point}</li>`).join("")}
-            </ul>
+              : `
+            <h3>Messages</h3>
+            <div class="tkw-messages-list">
+              ${summary.messages
+                .map(
+                  (msg: any) => `
+                <div class="tkw-message-item">
+                  <div class="tkw-message-header">
+                    <span class="tkw-timestamp">${new Date(msg.timestamp).toLocaleString()}</span>
+                  </div>
+                  <div class="tkw-message-content">${msg.content}</div>
+                </div>
+              `,
+                )
+                .join("")}
+            </div>
           `
-              : ""
-          }
-
-          ${
-            keySummary.actionItems.length > 0
-              ? `
-            <h3>✅ Action Items</h3>
-            <ul>
-              ${keySummary.actionItems.map((item: string) => `<li>${item}</li>`).join("")}
-            </ul>
-          `
-              : ""
-          }
-
-          ${
-            keySummary.questions.length > 0
-              ? `
-            <h3>❓ Additional Questions</h3>
-            <ul>
-              ${keySummary.questions.map((q: string) => `<li>${q}</li>`).join("")}
-            </ul>
-          `
-              : ""
           }
         </div>
       </div>
       <div class="tkw-teams-modal-footer">
-        <button class="tkw-teams-btn tkw-teams-btn-secondary" id="tkw-copy-chat">Copy to Clipboard</button>
-        <button class="tkw-teams-btn tkw-teams-btn-primary" id="tkw-save-chat">Save to Navify</button>
+        <button class="tkw-teams-btn tkw-teams-btn-primary" id="tkw-save-chat">Create New Knowledge Entry</button>
       </div>
     </div>
   `;
@@ -793,23 +905,24 @@ function showTeamsChatModal(chatData: any) {
     closeBtn.addEventListener("click", () => modal.remove());
   }
 
-  const copyBtn = document.getElementById("tkw-copy-chat");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      navigator.clipboard
-        .writeText(formattedText)
-        .then(() => {
-          copyBtn.textContent = "✓ Copied!";
-          setTimeout(() => {
-            copyBtn.textContent = "Copy to Clipboard";
-          }, 2000);
-        })
-        .catch((err) => {
-          console.error("Failed to copy:", err);
-          alert("Failed to copy to clipboard");
-        });
-    });
-  }
+  // const copyBtn = document.getElementById("tkw-copy-chat");
+  // if (copyBtn) {
+  //   copyBtn.addEventListener("click", () => {
+  //     navigator.clipboard
+  //       .writeText(qaPairs.formattedQA)
+  //       .then(() => {
+  //         const originalText = copyBtn.textContent;
+  //         copyBtn.textContent = "✓ Copied!";
+  //         setTimeout(() => {
+  //           copyBtn.textContent = originalText;
+  //         }, 2000);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to copy:", err);
+  //         alert("Failed to copy to clipboard");
+  //       });
+  //   });
+  // }
 
   const saveBtn = document.getElementById("tkw-save-chat");
   if (saveBtn) {
@@ -823,8 +936,8 @@ function showTeamsChatModal(chatData: any) {
       const params = new URLSearchParams({
         action: "new-from-teams",
         title: title,
-        content: formattedText,
-        question: keySummary.extractedQuestion || "",
+        content: qaPairs.formattedQA,
+        question: qaPairs.question || keySummary.extractedQuestion || "",
       });
       console.log(
         "[Teams Capture] Opening modal with params:",
