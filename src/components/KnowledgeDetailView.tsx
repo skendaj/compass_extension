@@ -69,7 +69,7 @@ const KnowledgeDetailView: React.FC<KnowledgeDetailViewProps> = ({
           <ArrowLeft size={20} />
           Back to Results
         </button>
-        <ShareButton entryId={entry.id} entryTitle={entry.title} />
+        <ShareButton entry={entry} />
       </div>
 
       <div className="detail-content">
