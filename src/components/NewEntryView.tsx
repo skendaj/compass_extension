@@ -34,18 +34,6 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       // Use the question parameter if provided
       if (initialData.question) {
         setProblem(initialData.question);
-      } else {
-        // Fallback to extracting from content
-        const lines = initialData.content.split("\n");
-        const overviewLine = lines.find(
-          (line) => line.includes("Overview") || line.includes("Summary"),
-        );
-        if (overviewLine) {
-          const idx = lines.indexOf(overviewLine);
-          if (idx + 1 < lines.length) {
-            setProblem(lines[idx + 1].trim());
-          }
-        }
       }
     }
   }, [initialData]);
@@ -147,18 +135,36 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       // Also save to backend API
       try {
         const backendUrl = "http://localhost:5000/api/knowledge";
+
+        // Format content properly for the API with User/Admin prefixes
+        let apiContent = solution.trim();
+
+        // If this is from Teams, reconstruct with User/Admin format
+        if (initialData && problem) {
+          // Format as User: question, Admin: answer
+          apiContent = `User: ${problem}\nAdmin: ${solution.trim()}`;
+        }
+
+        const apiBody = {
+          content: apiContent,
+        };
+
+        console.log("[NewEntryView] Sending to API:", apiBody);
+
         const response = await fetch(backendUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            content: JSON.stringify(newEntry),
-          }),
+          body: JSON.stringify(apiBody),
         });
 
         if (response.ok) {
-          console.log("[NewEntryView] Entry saved to backend successfully");
+          const responseData = await response.json();
+          console.log(
+            "[NewEntryView] Entry saved to backend successfully:",
+            responseData,
+          );
         } else {
           console.warn(
             "[NewEntryView] Failed to save to backend:",
@@ -196,10 +202,12 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
       </div>
 
       {initialData && (
-        <div className="import-notice">
-          <Users size={16} />
-          <span>Imported from Microsoft Teams chat</span>
-        </div>
+        <>
+          <div className="import-notice">
+            <Users size={16} />
+            <span>Imported from Microsoft Teams chat</span>
+          </div>
+        </>
       )}
 
       <form onSubmit={handleSubmit} className="new-entry-form">
@@ -244,7 +252,7 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
             value={solution}
             onChange={(e) => setSolution(e.target.value)}
             placeholder="Provide the detailed solution, explanation, or knowledge content"
-            className="form-textarea"
+            className="form-textarea solution-textarea"
             rows={12}
             disabled={isSaving}
           />
@@ -312,18 +320,21 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
 
       <style>{`
         .new-entry-view {
-          padding: 24px;
-          max-width: 900px;
-          margin: 0 auto;
+          padding: 0;
+          max-width: 100%;
+          margin: 0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
         }
 
         .new-entry-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 24px;
-          padding-bottom: 16px;
-          border-bottom: 2px solid #e0e0e0;
+          padding: 20px 24px;
+          border-bottom: 1px solid #e0e0e0;
+          flex-shrink: 0;
         }
 
         .new-entry-header h2 {
@@ -331,18 +342,23 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
           align-items: center;
           gap: 12px;
           color: #002233;
-          font-size: 24px;
+          font-size: 20px;
           font-weight: 700;
           margin: 0;
+          font-family: 'Cairo', 'Roboto', sans-serif;
+        }
+
+        .new-entry-header h2 svg {
+          color: #002233;
         }
 
         .close-btn {
           background: transparent;
           border: 2px solid #e0e0e0;
           color: #666;
-          width: 36px;
-          height: 36px;
-          border-radius: 6px;
+          width: 32px;
+          height: 32px;
+          border-radius: 4px;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -351,9 +367,9 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
         }
 
         .close-btn:hover {
-          border-color: #ff4444;
-          color: #ff4444;
-          background: #fff5f5;
+          border-color: #7E85FD;
+          color: #7E85FD;
+          background: #f5f5f5;
         }
 
         .import-notice {
@@ -364,16 +380,95 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
           background: #f0f9ff;
           border-left: 4px solid #7E85FD;
           border-radius: 4px;
-          margin-bottom: 24px;
+          margin: 16px 24px;
           color: #002233;
           font-size: 14px;
           font-weight: 500;
+        }
+
+        .api-payload-preview {
+          margin-bottom: 24px;
+        }
+
+        .api-payload-preview h3 {
+          color: #002233;
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+
+        .api-payload-info {
+          background: #f8f9fa;
+          border: 2px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+        }
+
+        .api-method {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #e0e0e0;
+        }
+
+        .method-badge {
+          background: #4CAF50;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          font-family: monospace;
+        }
+
+        .api-method code {
+          color: #002233;
+          font-size: 13px;
+          background: #fff;
+          padding: 4px 8px;
+          border-radius: 4px;
+          border: 1px solid #e0e0e0;
+          font-family: monospace;
+        }
+
+        .api-body strong {
+          color: #002233;
+          font-size: 13px;
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .api-body pre {
+          background: #fff;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          padding: 12px;
+          overflow-x: auto;
+          font-size: 12px;
+          color: #000;
+          margin: 0;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          font-family: monospace;
+          max-height: 200px;
+        }
+
+        .solution-textarea {
+          font-family: 'Courier New', monospace;
+          font-size: 13px;
+          line-height: 1.5;
         }
 
         .new-entry-form {
           display: flex;
           flex-direction: column;
           gap: 20px;
+          padding: 24px;
+          flex: 1;
+          overflow-y: auto;
         }
 
         .error-message {
@@ -501,8 +596,10 @@ const NewEntryView: React.FC<NewEntryViewProps> = ({
           justify-content: flex-end;
           gap: 12px;
           margin-top: 8px;
-          padding-top: 20px;
-          border-top: 2px solid #e0e0e0;
+          padding: 16px 24px;
+          background: #f8f9fa;
+          border-top: 1px solid #e0e0e0;
+          flex-shrink: 0;
         }
 
         .btn-primary,

@@ -81,16 +81,31 @@ function extractMessageFromElement(
     ".ui-chat__message__author",
   ];
 
-  let sender = "Unknown";
-  for (const selector of senderSelectors) {
-    const senderElement = element.querySelector(selector);
-    if (senderElement && senderElement.textContent?.trim()) {
-      sender = senderElement.textContent.trim();
-      break;
+  let sender = "";
+
+  // First try to get email from data attributes
+  const emailAttr =
+    element.getAttribute("data-email") ||
+    element.getAttribute("data-sender-email") ||
+    element.getAttribute("data-upn");
+
+  if (emailAttr && emailAttr.includes("@")) {
+    sender = emailAttr;
+  }
+
+  // Try to extract from sender elements
+  if (!sender) {
+    for (const selector of senderSelectors) {
+      const senderElement = element.querySelector(selector);
+      if (senderElement && senderElement.textContent?.trim()) {
+        sender = senderElement.textContent.trim();
+        break;
+      }
     }
   }
 
-  if (sender === "Unknown") {
+  // Try aria-label as fallback
+  if (!sender) {
     const ariaLabel = element.getAttribute("aria-label");
     if (ariaLabel) {
       const match = ariaLabel.match(/from (.*?)(?:,|$)/i);
@@ -98,6 +113,34 @@ function extractMessageFromElement(
         sender = match[1].trim();
       }
     }
+  }
+
+  // If still no sender, try to get current page user info
+  if (!sender) {
+    const userButton = document.querySelector('[data-tid="user-button"]');
+    const meButton = document.querySelector('[aria-label*="profile"]');
+    if (userButton && userButton.getAttribute("aria-label")) {
+      const label = userButton.getAttribute("aria-label");
+      if (label && label.includes("@")) {
+        const emailMatch = label.match(/[\w.-]+@[\w.-]+\.\w+/);
+        if (emailMatch) {
+          sender = emailMatch[0];
+        }
+      }
+    } else if (meButton) {
+      const label = meButton.getAttribute("aria-label");
+      if (label && label.includes("@")) {
+        const emailMatch = label.match(/[\w.-]+@[\w.-]+\.\w+/);
+        if (emailMatch) {
+          sender = emailMatch[0];
+        }
+      }
+    }
+  }
+
+  // Default to "You" if still unknown
+  if (!sender) {
+    sender = "You";
   }
 
   const contentSelectors = [
@@ -333,6 +376,133 @@ export function generateKeySummary(
   };
 }
 
+export function extractQAPairs(messages: TeamsChatMessage[]): {
+  question: string;
+  answer: string;
+  pairs: Array<{
+    question: string;
+    answer: string;
+    questionBy: string;
+    answerBy: string;
+  }>;
+  formattedQA: string;
+  apiPayload: { content: string };
+} {
+  const pairs: Array<{
+    question: string;
+    answer: string;
+    questionBy: string;
+    answerBy: string;
+  }> = [];
+  let mainQuestion = "";
+  let mainAnswer = "";
+
+  // Group messages by question/answer pattern
+  let currentQuestion: { text: string; sender: string } | null = null;
+  const answerMessages: Array<{ text: string; sender: string }> = [];
+
+  for (const msg of messages) {
+    const isQuestion = msg.content.includes("?");
+
+    if (isQuestion) {
+      // Save previous Q&A pair if exists
+      if (currentQuestion && answerMessages.length > 0) {
+        const answer = answerMessages.map((a) => a.text).join(" ");
+        pairs.push({
+          question: currentQuestion.text,
+          answer: answer,
+          questionBy: currentQuestion.sender,
+          answerBy: answerMessages[0].sender,
+        });
+
+        // Set as main Q&A if first pair
+        if (!mainQuestion) {
+          mainQuestion = currentQuestion.text;
+          mainAnswer = answer;
+        }
+      }
+
+      // Start new question
+      currentQuestion = { text: msg.content, sender: msg.sender };
+      answerMessages.length = 0; // Clear answers
+    } else {
+      // This is an answer/response
+      answerMessages.push({ text: msg.content, sender: msg.sender });
+    }
+  }
+
+  // Don't forget the last Q&A pair
+  if (currentQuestion && answerMessages.length > 0) {
+    const answer = answerMessages.map((a) => a.text).join(" ");
+    pairs.push({
+      question: currentQuestion.text,
+      answer: answer,
+      questionBy: currentQuestion.sender,
+      answerBy: answerMessages[0].sender,
+    });
+
+    if (!mainQuestion) {
+      mainQuestion = currentQuestion.text;
+      mainAnswer = answer;
+    }
+  }
+
+  // If no Q&A pairs found, try to extract from all messages
+  if (pairs.length === 0 && messages.length >= 2) {
+    const questionMsg = messages.find((m) => m.content.includes("?"));
+    if (questionMsg) {
+      mainQuestion = questionMsg.content;
+      const otherMessages = messages.filter((m) => m !== questionMsg);
+      mainAnswer = otherMessages
+        .map((m) => `${m.sender}: ${m.content}`)
+        .join("\n");
+      pairs.push({
+        question: mainQuestion,
+        answer: mainAnswer,
+        questionBy: questionMsg.sender,
+        answerBy: otherMessages[0]?.sender || "Admin",
+      });
+    }
+  }
+
+  // Format for display
+  let formattedQA = "";
+  pairs.forEach((pair, index) => {
+    formattedQA += `Q${index + 1} (${pair.questionBy}): ${pair.question}\n\n`;
+    formattedQA += `A${index + 1} (${pair.answerBy}): ${pair.answer}\n\n`;
+    if (index < pairs.length - 1) {
+      formattedQA += "---\n\n";
+    }
+  });
+
+  // Prepare API payload format
+  const apiContent = pairs
+    .map((pair) => {
+      return `User: ${pair.question}\nAdmin: ${pair.answer}`;
+    })
+    .join("\n\n");
+
+  const apiPayload = {
+    content:
+      apiContent ||
+      formattedQA ||
+      messages
+        .map((m) => {
+          const sender = m.sender === "Unknown" ? "User" : m.sender;
+          return `${sender}: ${m.content}`;
+        })
+        .join("\n"),
+  };
+
+  return {
+    question: mainQuestion,
+    answer: mainAnswer,
+    pairs,
+    formattedQA: formattedQA || messages.map((m) => m.content).join("\n\n"),
+    apiPayload,
+  };
+}
+
 export function detectChatContext(): {
   chatName?: string;
   chatType?: "one-on-one" | "group" | "channel";
@@ -380,6 +550,7 @@ export async function extractTeamsChat(
   formattedText: string;
   keySummary: ReturnType<typeof generateKeySummary>;
   context: ReturnType<typeof detectChatContext>;
+  qaPairs: ReturnType<typeof extractQAPairs>;
 }> {
   if (!isTeamsPage()) {
     throw new Error("Not on a Microsoft Teams page");
@@ -404,11 +575,13 @@ export async function extractTeamsChat(
   };
   const formattedText = formatChatSummary(relevantSummary);
   const context = detectChatContext();
+  const qaPairs = extractQAPairs(keySummary.relevantMessages);
 
   return {
     summary: relevantSummary,
     formattedText,
     keySummary,
     context,
+    qaPairs,
   };
 }
