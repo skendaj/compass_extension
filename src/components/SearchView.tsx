@@ -76,14 +76,14 @@ const SearchView: React.FC<SearchViewProps> = ({ onSearch, isLoading }) => {
         </div>
         <button
           type="submit"
-          className="search-submit-btn"
+          className="mui-button search-submit-btn"
           disabled={isLoading || !query.trim()}
         >
           {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
 
-      <span>
+      <span className="helper">
         Hint: ask a question naturally, to get the best results use specific
         keywords.
       </span>
