@@ -301,7 +301,7 @@ const SettingsView: React.FC = () => {
 
           <div className="button-group">
             <button
-              className="btn btn-primary"
+              className="mui-button"
               onClick={handleSave}
               disabled={isSaving}
             >
@@ -319,7 +319,7 @@ const SettingsView: React.FC = () => {
             </button>
 
             <button
-              className="btn btn-secondary"
+              className="mui-button btn-secondary"
               onClick={handleTestConnection}
               disabled={isTesting}
             >
@@ -336,7 +336,10 @@ const SettingsView: React.FC = () => {
               )}
             </button>
 
-            <button className="btn btn-danger" onClick={handleClearConfig}>
+            <button
+              className="mui-button btn-danger"
+              onClick={handleClearConfig}
+            >
               Clear Configuration
             </button>
           </div>
