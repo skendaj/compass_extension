@@ -3,13 +3,13 @@ import { Share2, Copy, Mail, Check, FileText } from "lucide-react";
 import { DeepLinkService } from "../services/deepLinkService";
 import { shareConfluenceService } from "../services/shareConfluence";
 import { storageService } from "../services/storageService";
+import { KnowledgeEntry } from "../types";
 
 interface ShareButtonProps {
-  entryId: string;
-  entryTitle: string;
+  entry: KnowledgeEntry;
 }
 
-const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
+const ShareButton: React.FC<ShareButtonProps> = ({ entry }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -30,19 +30,18 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
         setContentType(config.contentType || "page");
       }
 
-      const entry = await storageService.getKnowledgeEntryById(entryId);
       if (entry?.metadata.confluenceUrl) {
         setConfluenceUrl(entry.metadata.confluenceUrl);
         setIsShared(true);
       }
     };
     loadData();
-  }, [entryId]);
+  }, [entry.id]);
 
-  const shareLink = DeepLinkService.generateShareLink(entryId, "external");
+  const shareLink = DeepLinkService.generateShareLink(entry.id, "external");
   const socialLinks = DeepLinkService.getSocialShareLinks(
     shareLink,
-    entryTitle,
+    entry.title,
   );
 
   const handleCopyLink = async () => {
@@ -74,7 +73,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
     if (confluenceUrl) {
       const shareLinks = DeepLinkService.getSocialShareLinks(
         confluenceUrl,
-        entryTitle,
+        entry.title,
       );
       window.open(shareLinks.teams, "_blank");
     } else {
@@ -87,7 +86,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
     if (confluenceUrl) {
       const shareLinks = DeepLinkService.getSocialShareLinks(
         confluenceUrl,
-        entryTitle,
+        entry.title,
       );
       window.open(shareLinks.email);
     } else {
@@ -105,13 +104,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
     setIsSharing(true);
     setShareStatus(null);
 
-    const entry = await storageService.getKnowledgeEntryById(entryId);
-    if (!entry) {
-      setShareStatus("Entry not found");
-      setIsSharing(false);
-      return;
-    }
-
     try {
       const isConfigured = await shareConfluenceService.isConfigured();
       if (!isConfigured) {
@@ -126,12 +118,19 @@ const ShareButton: React.FC<ShareButtonProps> = ({ entryId, entryTitle }) => {
       const webUrl = shareConfluenceService.getWebUrl(response);
 
       if (webUrl) {
-        await storageService.updateKnowledgeEntry(entryId, {
-          metadata: {
-            ...entry.metadata,
-            confluenceUrl: webUrl,
-          },
-        });
+        // Try to update storage if entry has been saved
+        try {
+          await storageService.updateKnowledgeEntry(entry.id, {
+            metadata: {
+              ...entry.metadata,
+              confluenceUrl: webUrl,
+            },
+          });
+        } catch (err) {
+          console.log(
+            "[ShareButton] Entry not in storage yet, skipping update",
+          );
+        }
 
         setConfluenceUrl(webUrl);
         setIsShared(true);
